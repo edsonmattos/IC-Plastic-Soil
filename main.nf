@@ -24,15 +24,16 @@ params.max_ee_r        = 2
 // Classifier Silva (atualizado via script de download)
 params.classifier      = "refs/silva-138-99-515-806-nb-classifier.qza"
 
-// Ambiente conda QIIME 2
+// Ambientes conda
 params.qiime_conda_env = "/home/edson/miniconda3/envs/qiime2-amplicon-2026.4"
+params.sra_conda_env   = "/home/edson/miniconda3/envs/sra-tools"
 
 // =============================================================================
 // PROCESSO 1: Download SRA → FASTQ
 // =============================================================================
 process DOWNLOAD_SRA {
     tag "$sra_id"
-    conda params.qiime_conda_env
+    conda params.sra_conda_env
     publishDir "${params.outdir}/raw", mode: 'copy'
 
     input:
@@ -43,12 +44,17 @@ process DOWNLOAD_SRA {
 
     script:
     """
-    prefetch ${sra_id} --output-directory .
+    prefetch ${sra_id} \
+        --max-size 100g \
+        --output-directory .
+
     fasterq-dump ${sra_id} \
         --outdir . \
         --threads ${params.threads} \
         --split-files
+
     pigz -p ${params.threads} ${sra_id}*.fastq
+    rm -rf ${sra_id}/
     """
 }
 
@@ -59,7 +65,7 @@ process BUILD_MANIFEST {
     publishDir "${params.outdir}/manifests", mode: 'copy'
 
     input:
-    path reads_dir
+    path fastq_files
 
     output:
     path "manifest.tsv", emit: manifest
@@ -68,7 +74,7 @@ process BUILD_MANIFEST {
     def mode = params.paired_end ? "paired" : "single"
     """
     python3 ${projectDir}/scripts/build_manifest.py \
-        --reads-dir ${reads_dir} \
+        --reads-dir . \
         --mode ${mode} \
         --output manifest.tsv
     """
@@ -281,7 +287,9 @@ workflow {
             .filter { it }
 
         reads_ch = DOWNLOAD_SRA(sra_ch)
-        BUILD_MANIFEST(reads_ch.reads.collect())
+        // Coleta apenas os paths dos fastq.gz (segundo elemento da tupla)
+        fastq_ch = reads_ch.reads.map { sra_id, files -> files }.collect()
+        BUILD_MANIFEST(fastq_ch)
         manifest_ch = BUILD_MANIFEST.out.manifest
 
     // ── Modo 2: Manifest já pronto ───────────────────────────────────────────
