@@ -1,0 +1,4 @@
+# Um SRA ID por linha (remova o "#" e substitua pelos IDs reais)
+# SRR12345678
+# SRR12345679
+# SRR12345680

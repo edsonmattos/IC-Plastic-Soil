@@ -1,0 +1,32 @@
+# ── Reuniões e arquivos internos ─────────────────────────────────────────────
+reunioes/
+prompt.MD
+
+# ── Nextflow ──────────────────────────────────────────────────────────────────
+.nextflow/
+.nextflow_work/
+.nextflow.log*
+work/
+
+# ── Dados brutos e referências grandes (não versionar binários pesados) ───────
+data/raw/
+refs/
+results/
+
+# ── Arquivos QIIME 2 ──────────────────────────────────────────────────────────
+*.qza
+*.qzv
+
+# ── Logs ─────────────────────────────────────────────────────────────────────
+logs/
+*.log
+
+# ── Python ───────────────────────────────────────────────────────────────────
+__pycache__/
+*.pyc
+*.pyo
+.env
+
+# ── Sistema ──────────────────────────────────────────────────────────────────
+.DS_Store
+Thumbs.db
