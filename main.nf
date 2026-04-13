@@ -91,8 +91,7 @@ process QIIME_IMPORT {
     path manifest
 
     output:
-    path "demux.qza",     emit: demux
-    path "demux-summary.qzv", emit: demux_viz
+    path "demux.qza", emit: demux
 
     script:
     def seq_type = params.paired_end \
@@ -108,13 +107,12 @@ process QIIME_IMPORT {
         --input-path ${manifest} \
         --input-format ${input_format} \
         --output-path demux.qza
-
-    qiime demux summarize \
-        --i-data demux.qza \
-        --o-visualization demux-summary.qzv \
-        --p-n 100000
     """
 }
+
+// Etapa opcional de QC — rode separado após o pipeline principal
+// qiime demux summarize --i-data results/qza/demux.qza \
+//     --o-visualization results/qza/demux-summary.qzv --p-n 10000
 
 // =============================================================================
 // PROCESSO 4: DADA2 - Denoise (denoising + merge + chimera removal)

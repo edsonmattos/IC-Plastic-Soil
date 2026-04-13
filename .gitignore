@@ -13,6 +13,9 @@ data/raw/
 refs/
 results/
 
+# ── Manifests gerados automaticamente (inputs manuais sra_ids/metadata são versionados) ──
+data/manifests/manifest_*.tsv
+
 # ── Arquivos QIIME 2 ──────────────────────────────────────────────────────────
 *.qza
 *.qzv

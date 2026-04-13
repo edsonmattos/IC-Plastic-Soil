@@ -58,7 +58,14 @@
       "Bash(ls -lh /tmp/sra-test/*.fastq.gz)",
       "Bash(ldd --version)",
       "Bash(ldd /home/edson/miniconda3/envs/sra-tools/bin/fasterq-dump)",
-      "Bash(conda rename:*)"
+      "Bash(conda rename:*)",
+      "Bash(ps -p 4653 -o pid,stat,comm)",
+      "Bash(kill -CONT 4653)",
+      "Bash(kill 4653)",
+      "Bash(chmod +x /home/edson/projetos/ic/projeto-mpb/auto-bash/run_pipeline.sh)",
+      "Bash(kill 21635)",
+      "Bash(ps -p 21635 -o pid,stat,comm)",
+      "Bash(kill -9 21635)"
     ]
   }
 }
