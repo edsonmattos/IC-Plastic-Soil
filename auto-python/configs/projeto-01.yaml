@@ -1,0 +1,26 @@
+project_name: "projeto-01"
+
+paths:
+  sra_ids_file: "data/manifests/sra_ids_projeto-01.txt"
+  reads_dir: "data/raw/projeto-01"
+  manifest: "data/manifests/manifest_projeto-01.tsv"
+  metadata: "data/manifests/metadata_projeto-01.tsv"
+  outdir: "results/projeto-01"
+  classifier: "refs/silva-138-99-515-806-nb-classifier.qza"
+
+sequencing:
+  mode: "paired"            # paired ou single
+
+dada2:
+  threads: 16
+  trunc_f: 280
+  trunc_r: 235
+  trim_left_f: 0
+  trim_left_r: 0
+  max_ee_f: 2
+  max_ee_r: 2
+
+conda:
+  qiime_env: "qiime2-amplicon-2026.4"
+  sra_env: "sra-tools"
+  base: "/home/edson/miniconda3"
