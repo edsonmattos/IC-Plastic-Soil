@@ -39,6 +39,7 @@ while [[ $# -gt 0 ]]; do
             echo "  download  → 01 Baixar sequências do SRA"
             echo "  manifest  → 02 Gerar manifest QIIME 2"
             echo "  import    → 03 Importar FASTQs para .qza"
+            echo "  quality   → 03b Visualização de qualidade (demux-summary.qzv)"
             echo "  dada2     → 04 Denoising com DADA2"
             echo "  taxonomy  → 05 Classificação taxonômica (Silva)"
             echo "  filter    → 06 Filtrar mitocôndrias/cloroplastos"
@@ -70,6 +71,7 @@ resolve_step() {
         download|01_download_sra)    echo "01_download_sra" ;;
         manifest|02_build_manifest)  echo "02_build_manifest" ;;
         import|qiime|03_qiime_import) echo "03_qiime_import" ;;
+        quality|demux|summary|03b_demux_summary) echo "03b_demux_summary" ;;
         dada2|04_dada2)              echo "04_dada2" ;;
         taxonomy|silva|05_taxonomy)  echo "05_taxonomy" ;;
         filter|06_filter_table)      echo "06_filter_table" ;;
@@ -130,6 +132,7 @@ ALL_STEPS=(
     "01_download_sra"
     "02_build_manifest"
     "03_qiime_import"
+    "03b_demux_summary"
     "04_dada2"
     "05_taxonomy"
     "06_filter_table"
@@ -140,6 +143,7 @@ ALL_STEPS_LABELS=(
     "Download SRA"
     "Gerar Manifest"
     "Import QIIME 2"
+    "Visualização de Qualidade"
     "DADA2 Denoising"
     "Taxonomia Silva"
     "Filtrar Tabela"
@@ -435,6 +439,22 @@ _qiime_import() {
         --output-path "${OUTDIR}/qza/demux.qza"
 }
 _step_should_run "03_qiime_import" && run_step "03_qiime_import" _qiime_import
+
+# ── PASSO 3b: Visualização de qualidade (opcional, para definir TRUNC_F/R) ───
+_demux_summary() {
+    conda activate qiime2-amplicon-2026.4
+    qiime demux summarize \
+        --i-data "${OUTDIR}/qza/demux.qza" \
+        --o-visualization "${OUTDIR}/qza/demux-summary.qzv"
+    echo ""
+    echo "  Abra em: https://view.qiime2.org"
+    echo "  Arquivo:  ${OUTDIR}/qza/demux-summary.qzv"
+    echo ""
+    echo "  Analise o gráfico de qualidade e ajuste no conf:"
+    echo "    TRUNC_F=XXX   # posição onde qualidade cai abaixo de Q30 (forward)"
+    echo "    TRUNC_R=XXX   # posição onde qualidade cai abaixo de Q30 (reverse)"
+}
+_step_should_run "03b_demux_summary" && run_step "03b_demux_summary" _demux_summary
 
 # ── PASSO 4: DADA2 ───────────────────────────────────────────────────────────
 _dada2() {
