@@ -154,8 +154,35 @@ STEP_NUM=0   # contador global de etapa atual
 
 step_done()   { grep -q "^$1$" "$STEPS_DONE_FILE" 2>/dev/null; }
 mark_done()   { echo "$1" >> "$STEPS_DONE_FILE"; }
-reset_step()  { sed -i "/^$1$/d" "$STEPS_DONE_FILE"; }
 reset_all()   { > "$STEPS_DONE_FILE"; }
+
+# Apaga arquivos de saída da etapa para permitir reexecução
+reset_step() {
+    sed -i "/^$1$/d" "$STEPS_DONE_FILE"
+    case "$1" in
+        02_build_manifest)
+            rm -f "${MANIFEST}" ;;
+        03_qiime_import)
+            rm -f "${OUTDIR}/qza/demux.qza" ;;
+        03b_demux_summary)
+            rm -f "${OUTDIR}/qza/demux-summary.qzv" ;;
+        04_dada2)
+            rm -f "${OUTDIR}/qza/table.qza" \
+                  "${OUTDIR}/qza/rep-seqs.qza" \
+                  "${OUTDIR}/qza/denoising-stats.qza" \
+                  "${OUTDIR}/qza/denoising-stats.qzv" \
+                  "${OUTDIR}/qza/base-transition-stats.qza" ;;
+        05_taxonomy)
+            rm -f "${OUTDIR}/taxonomy/taxonomy.qza" \
+                  "${OUTDIR}/taxonomy/taxonomy.qzv" \
+                  "${OUTDIR}/taxonomy/rep-seqs-filtered.qza" ;;
+        06_filter_table)
+            rm -f "${OUTDIR}/qza/table-filtered.qza" \
+                  "${OUTDIR}/qza/table-filtered.qzv" ;;
+        07_export)
+            rm -rf "${OUTDIR}/exports/" ;;
+    esac
+}
 
 run_step() {
     local name="$1"; shift
@@ -301,10 +328,11 @@ _do_download_sra() {
 
     # Lê os IDs (suporta arquivo sem newline no final e formato Windows)
     local ids=()
-    while IFS= read -r SRR || [ -n "$SRR" ]; do
+    while IFS=$'\t' read -r SRR rest || [ -n "$SRR" ]; do
         SRR="${SRR%%$'\r'}"
         [ -z "$SRR" ] && continue
         [[ "$SRR" == "#"* ]] && continue
+        [[ "$SRR" == "sample_id" ]] && continue
         ids+=("$SRR")
     done < "${SRA_IDS_FILE}"
 
@@ -472,6 +500,7 @@ _dada2() {
         --o-table "${OUTDIR}/qza/table.qza"
         --o-representative-sequences "${OUTDIR}/qza/rep-seqs.qza"
         --o-denoising-stats "${OUTDIR}/qza/denoising-stats.qza"
+        --o-base-transition-stats "${OUTDIR}/qza/base-transition-stats.qza"
         --verbose
     )
     "${CMD[@]}"

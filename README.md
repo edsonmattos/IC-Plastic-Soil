@@ -1,34 +1,47 @@
-# IC Plastic Soil — Pipeline de Microbioma 16S rRNA
+# IC Plastic Soil — Pipeline 16S rRNA Microbioma
 
-Pipeline automatizado para análise de microbioma do solo exposto a microplásticos, utilizando sequenciamento 16S rRNA (DADA2 + QIIME 2 + Nextflow).
+Pipeline de análise de microbioma do solo exposto a microplásticos via sequenciamento 16S rRNA.
 
-Desenvolvido no contexto de Iniciação Científica na **UTFPR**, sob orientação da Profa. Deborah Leite.
+Desenvolvido como Iniciação Científica na **UTFPR**, sob orientação da Profa. Deborah Leite.
 
 ---
 
 ## Visão Geral
 
-O pipeline realiza as seguintes etapas:
+```
+Download SRA → Manifest → Import QIIME 2 → DADA2 → Taxonomia Silva 138 → Filtro → Export
+```
 
-1. **Download** das sequências brutas via SRA Toolkit (`prefetch` + `fasterq-dump`)
-2. **Importação** para o formato QIIME 2 (`.qza`) via manifest
-3. **Denoising** com DADA2 (`denoise-paired`) — geração de ASVs
-4. **Classificação taxonômica** com classificador Silva 138
-5. **Filtragem** de contaminantes (mitocôndrias e cloroplastos)
-6. **Exportação** das tabelas (TSV) e sequências (FASTA) para análise em R
+| Etapa | Ferramenta | Saída |
+|---|---|---|
+| Download | SRA Toolkit | `.fastq.gz` |
+| Import | QIIME 2 | `demux.qza` |
+| Denoising | DADA2 | `table.qza`, `rep-seqs.qza` |
+| Taxonomia | Silva 138 + sklearn | `taxonomy.qza` |
+| Filtro | QIIME 2 | `table-filtered.qza` |
+| Export | BIOM + QIIME 2 | `feature-table.tsv`, `sequences.fasta`, `taxonomy.tsv` |
+
+---
+
+## Modos de Execução
+
+| Modo | Script | Quando usar |
+|---|---|---|
+| **Projeto** | `auto-bash/run_pipeline.sh` | Analisar amostras em conjunto (DADA2 batch) |
+| **Por Amostra** | `auto-bash/run_per_sample.sh` | Banco de dados, amostras independentes |
+
+Documentação completa dos scripts bash: [auto-bash/README.md](auto-bash/README.md)
 
 ---
 
 ## Requisitos
 
-| Ferramenta | Versão | Ambiente |
+| Ferramenta | Versão | Ambiente Conda |
 |---|---|---|
-| Miniconda | 3+ | base |
-| Mamba | 2.5+ | base |
-| Nextflow | 25.10+ | `nextflow-env` |
-| Java | 17 | `nextflow-env` |
-| QIIME 2 | 2026.4 | `qiime2-amplicon-2026.4` |
-| SRA Toolkit | 2.9+ | `qiime2-amplicon-2026.4` |
+| Miniconda / Mamba | 3+ / 2.5+ | base |
+| QIIME 2 Amplicon | 2026.4 | `qiime2-amplicon-2026.4` |
+| SRA Toolkit | 3.1.1 | `sra-tools` |
+| pigz | qualquer | sistema |
 
 ---
 
@@ -36,16 +49,12 @@ O pipeline realiza as seguintes etapas:
 
 ```bash
 # 1. Miniconda
-bash scripts/01_install_miniconda.sh
-source ~/.bashrc
+bash scripts/01_install_miniconda.sh && source ~/.bashrc
 
-# 2. QIIME 2 + SRA Toolkit
+# 2. QIIME 2
 bash scripts/02_install_qiime2_sra.sh
 
-# 3. Nextflow + Java
-bash scripts/03_install_nextflow.sh
-
-# 4. Classificador Silva (região V4, 515F/806R)
+# 3. Classificador Silva 138 (V4, 515F/806R) — ~1GB
 bash scripts/04_download_silva_classifier.sh
 ```
 
@@ -55,100 +64,75 @@ bash scripts/04_download_silva_classifier.sh
 
 ```
 projeto-mpb/
-├── main.nf                        # Pipeline Nextflow principal
-├── nextflow.config                # Configuração de perfis e recursos
+├── auto-bash/
+│   ├── run_pipeline.sh          # Modo projeto (batch)
+│   ├── run_per_sample.sh        # Modo por amostra (banco de dados)
+│   ├── README.md                # Documentação detalhada dos scripts
+│   └── configs/
+│       ├── template.conf        # Template de configuração
+│       ├── projeto-01.conf      # Configuração do projeto 01
+│       └── projeto-02.conf      # Configuração do projeto 02
+├── data/
+│   ├── raw/                     # FASTQs baixados (ignorado pelo git)
+│   └── manifests/
+│       ├── sra_ids_projeto-01.txt   # IDs + parâmetros DADA2 por amostra
+│       ├── sra_ids_projeto-02.txt
+│       └── metadata_projeto-XX.tsv  # Metadados das amostras
+├── results/                     # Resultados gerados (ignorado pelo git)
+│   ├── projeto-01/
+│   ├── projeto-02/
+│   └── samples/                 # Resultados por amostra (modo banco)
+├── refs/                        # Classificador Silva (ignorado pelo git)
 ├── scripts/
+│   ├── build_manifest.py        # Gerador de manifest QIIME 2
 │   ├── 01_install_miniconda.sh
 │   ├── 02_install_qiime2_sra.sh
-│   ├── 03_install_nextflow.sh
 │   ├── 04_download_silva_classifier.sh
-│   ├── 05_validate_checklist.sh   # Checklist de validação dos resultados
-│   └── build_manifest.py          # Gerador de manifest QIIME 2
-├── data/
-│   └── manifests/
-│       ├── sra_ids.txt            # Lista de SRA IDs (um por linha)
-│       └── metadata.tsv           # Metadados das amostras
-└── results/                       # Saídas geradas pelo pipeline
-    ├── qza/                       # Artefatos QIIME 2
-    ├── taxonomy/                  # Classificação taxonômica
-    └── exports/                   # TSV + FASTA para análise em R
+│   └── 05_validate_checklist.sh
+├── ROTEIRO_MANUAL.md            # Guia passo a passo sem scripts
+└── main.nf                      # Pipeline Nextflow (alternativo)
 ```
 
 ---
 
-## Como Usar
+## Formato do Arquivo de IDs
 
-### Modo 1 — Download automático via SRA
-
-Preencha `data/manifests/sra_ids.txt` com um SRA ID por linha, depois:
-
-```bash
-conda activate nextflow-env
-
-nextflow run main.nf \
-  --sra_ids data/manifests/sra_ids.txt \
-  -profile local
-```
-
-### Modo 2 — FASTQs já disponíveis localmente
-
-```bash
-# Gerar manifest a partir dos FASTQs em data/raw/
-python3 scripts/build_manifest.py \
-  --reads-dir data/raw \
-  --mode paired \
-  --output data/manifests/manifest.tsv
-
-nextflow run main.nf \
-  --manifest data/manifests/manifest.tsv \
-  -profile local
-```
-
-### Parâmetros principais
-
-| Parâmetro | Padrão | Descrição |
-|---|---|---|
-| `--trunc_f` | 280 | Truncamento Forward (bp) |
-| `--trunc_r` | 235 | Truncamento Reverse (bp) |
-| `--threads` | 16 | Número de CPUs |
-| `--paired_end` | true | `false` para single-end |
-
----
-
-## Validação dos Resultados
-
-```bash
-bash scripts/05_validate_checklist.sh
-```
-
-Verifica automaticamente:
-- Caracteres inválidos nos metadados
-- Geração dos arquivos `.qzv`
-- Porcentagem de reads que passaram pelo DADA2 (ideal ≥ 70%)
-- Número de ASVs e sequências exportadas
-- Cobertura da classificação taxonômica
-
-Os arquivos `.qzv` podem ser visualizados em [view.qiime2.org](https://view.qiime2.org).
-
----
-
-## Metadados
-
-O arquivo `data/manifests/metadata.tsv` deve seguir o formato QIIME 2:
+`data/manifests/sra_ids_projeto-XX.txt` — TSV com parâmetros por amostra:
 
 ```tsv
-#SampleID	tipo.plastico	concentracao.mg.kg	solo.origem
-#q2:types	categorical	numeric	categorical
-SRR001	PBAT	100	A
-SRR002	blend.amido.poliester	500	B
+# sample_id    trunc_f  trunc_r  trim_f  trim_r  max_ee_f  max_ee_r  seq_mode
+SRR15247053    280      235      0       0       2         2         paired
+ERR10890547    270      240      17      20      2         4         paired
 ```
 
-> Use apenas letras, números, `.`, `_` e `-` nos nomes das amostras.
+| Coluna | Descrição | Padrão |
+|---|---|---|
+| `sample_id` | ID do SRA (SRR/ERR/DRR) | — |
+| `trunc_f` | Truncar forward em X bp | 280 |
+| `trunc_r` | Truncar reverse em X bp | 235 |
+| `trim_f` | Remover X bp do início forward (primers) | 0 |
+| `trim_r` | Remover X bp do início reverse (primers) | 0 |
+| `max_ee_f` | Máximo de erros esperados forward | 2 |
+| `max_ee_r` | Máximo de erros esperados reverse | 2 |
+| `seq_mode` | `paired` ou `single` | paired |
+
+---
+
+## Visualização dos Resultados
+
+Arquivos `.qzv` são visualizados em **[view.qiime2.org](https://view.qiime2.org)** (arrastar e soltar):
+
+| Arquivo | O que verificar |
+|---|---|
+| `demux-summary.qzv` | Qualidade por posição → define TRUNC_F/R |
+| `denoising-stats.qzv` | % merged ≥ 70%, % filtered ≥ 80% |
+| `taxonomy.qzv` | Predominância de Bacteria, pouco Unassigned |
 
 ---
 
 ## Referências
 
-- Pipeline de referência: [nf-core/ampliseq](https://github.com/nf-core/ampliseq)
-- Banco de dados taxonômico: [SILVA 138](https://www.arb-silva.de/)
-- Ferramenta de análise: [QIIME 2](https://qiime2.org/)
+- [QIIME 2](https://qiime2.org/) — plataforma de análise de microbioma
+- [SILVA 138](https://www.arb-silva.de/) — banco de dados taxonômico
+- [nf-core/ampliseq](https://github.com/nf-core/ampliseq) — pipeline de referência
+- [DADA2](https://benjjneb.github.io/dada2/) — denoising de amplicons
