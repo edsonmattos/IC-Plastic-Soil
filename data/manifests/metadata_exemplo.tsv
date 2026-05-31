@@ -1,6 +1,0 @@
-#SampleID	tipo.plastico	concentracao.mg.kg	solo.origem	sequenciamento
-#q2:types	categorical	numeric	categorical	categorical
-SRR001	PBAT	100	A	16S
-SRR002	PBAT	500	A	16S
-SRR003	blend.amido.poliester	100	B	16S
-SRR004	controle	0	A	16S

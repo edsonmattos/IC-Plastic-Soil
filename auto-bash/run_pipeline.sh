@@ -36,14 +36,18 @@ while [[ $# -gt 0 ]]; do
         --list)
             echo ""
             echo "Etapas disponíveis:"
-            echo "  download  → 01 Baixar sequências do SRA"
-            echo "  manifest  → 02 Gerar manifest QIIME 2"
-            echo "  import    → 03 Importar FASTQs para .qza"
-            echo "  quality   → 03b Visualização de qualidade (demux-summary.qzv)"
-            echo "  dada2     → 04 Denoising com DADA2"
-            echo "  taxonomy  → 05 Classificação taxonômica (Silva)"
-            echo "  filter    → 06 Filtrar mitocôndrias/cloroplastos"
-            echo "  export    → 07 Exportar TSV + FASTA para R"
+            echo "  download    → 01 Baixar sequências do SRA"
+            echo "  manifest    → 02 Gerar manifest QIIME 2"
+            echo "  import      → 03 Importar FASTQs para .qza"
+            echo "  quality     → 03b Visualização de qualidade (demux-summary.qzv)"
+            echo "  dada2       → 04 Denoising com DADA2"
+            echo "  taxonomy    → 05 Classificação taxonômica (Silva)"
+            echo "  filter      → 06 Filtrar mitocôndrias/cloroplastos"
+            echo "  export      → 07 Exportar TSV + FASTA para R"
+            echo "  barplot     → 08 Barplot taxonômico"
+            echo "  tree        → 09 Árvore filogenética (MAFFT + FastTree)"
+            echo "  diversity   → 10 Métricas de diversidade (alfa + beta)"
+            echo "  rarefaction → 11 Curva de rarefação"
             echo ""
             exit 0 ;;
         -*) echo "[ERRO] Opção desconhecida: $1"; exit 1 ;;
@@ -76,6 +80,10 @@ resolve_step() {
         taxonomy|silva|05_taxonomy)  echo "05_taxonomy" ;;
         filter|06_filter_table)      echo "06_filter_table" ;;
         export|07_export)            echo "07_export" ;;
+        barplot|08_barplot)          echo "08_barplot" ;;
+        tree|phylogeny|09_tree)      echo "09_tree" ;;
+        diversity|10_diversity)      echo "10_diversity" ;;
+        rarefaction|11_rarefaction)  echo "11_rarefaction" ;;
         *)
             echo "[ERRO] Etapa inválida: '$1'" >&2
             echo "       Opções: download manifest import dada2 taxonomy filter export" >&2
@@ -125,7 +133,7 @@ _spinner_start() {
 
 # ── Funções de controle ───────────────────────────────────────────────────────
 STEPS_DONE_FILE="${OUTDIR}/.steps_done"
-mkdir -p "${OUTDIR}/qza" "${OUTDIR}/taxonomy" "${OUTDIR}/exports" "${OUTDIR}/reports"
+mkdir -p "${OUTDIR}/qza" "${OUTDIR}/taxonomy" "${OUTDIR}/exports" "${OUTDIR}/reports" "${OUTDIR}/qzv"
 touch "$STEPS_DONE_FILE"
 
 ALL_STEPS=(
@@ -137,6 +145,10 @@ ALL_STEPS=(
     "05_taxonomy"
     "06_filter_table"
     "07_export"
+    "08_barplot"
+    "09_tree"
+    "10_diversity"
+    "11_rarefaction"
 )
 
 ALL_STEPS_LABELS=(
@@ -148,6 +160,10 @@ ALL_STEPS_LABELS=(
     "Taxonomia Silva"
     "Filtrar Tabela"
     "Exportar TSV/FASTA"
+    "Barplot Taxonômico"
+    "Árvore Filogenética"
+    "Métricas de Diversidade"
+    "Curva de Rarefação"
 )
 
 STEP_NUM=0   # contador global de etapa atual
@@ -181,6 +197,17 @@ reset_step() {
                   "${OUTDIR}/qza/table-filtered.qzv" ;;
         07_export)
             rm -rf "${OUTDIR}/exports/" ;;
+        08_barplot)
+            rm -f "${OUTDIR}/qzv/taxa-barplot.qzv" ;;
+        09_tree)
+            rm -f "${OUTDIR}/qza/aligned-rep-seqs.qza" \
+                  "${OUTDIR}/qza/masked-aligned-rep-seqs.qza" \
+                  "${OUTDIR}/qza/unrooted-tree.qza" \
+                  "${OUTDIR}/qza/rooted-tree.qza" ;;
+        10_diversity)
+            rm -rf "${OUTDIR}/diversity/" ;;
+        11_rarefaction)
+            rm -f "${OUTDIR}/qzv/alpha-rarefaction.qzv" ;;
     esac
 }
 
@@ -349,8 +376,8 @@ _do_download_sra() {
         idx=$(( idx + 1 ))
         local LOG="${OUTDIR}/reports/${STEP_ID}_${SRR}.log"
 
-        # Já existe? Pula
-        if ls "${READS_DIR}/${SRR}"*.fastq.gz &>/dev/null 2>&1; then
+        # Já existe? Pula (busca flat e em subdiretório)
+        if find "${READS_DIR}" -name "${SRR}_1.fastq.gz" -o -name "${SRR}_R1.fastq.gz" 2>/dev/null | grep -q .; then
             dl_skip=$(( dl_skip + 1 ))
             echo -e "│  ${GREEN}[✓]${NC} (${idx}/${total_ids}) ${SRR} — já existe, pulando"
             continue
@@ -445,8 +472,25 @@ _build_manifest() {
     python3 "$(dirname "$0")/../scripts/build_manifest.py" \
         --reads-dir "${READS_DIR}" \
         --mode "${SEQ_MODE}" \
-        --output "${MANIFEST}"
-    echo "  Amostras no manifest: $(grep -c '^[^#]' "${MANIFEST}" || true)"
+        --output "${MANIFEST}" \
+        --recursive
+    local n_samples
+    n_samples=$(tail -n +2 "${MANIFEST}" | wc -l)
+    echo "  Amostras no manifest: ${n_samples}"
+
+    # Gerar metadata mínimo se não existir ou estiver desatualizado
+    if [ ! -s "${METADATA}" ] || \
+       ! tail -n +2 "${MANIFEST}" | cut -f1 | \
+         diff - <(tail -n +2 "${METADATA}" | cut -f1) &>/dev/null; then
+        echo "  Gerando metadata mínimo: ${METADATA}"
+        mkdir -p "$(dirname "${METADATA}")"
+        echo -e "sample-id\tdescription" > "${METADATA}"
+        tail -n +2 "${MANIFEST}" | cut -f1 | \
+            while read -r id; do echo -e "${id}\t${id}"; done >> "${METADATA}"
+        echo "  Metadata criado com ${n_samples} amostras."
+    else
+        echo "  Metadata já existe e está atualizado: ${METADATA}"
+    fi
 }
 _step_should_run "02_build_manifest" && run_step "02_build_manifest" _build_manifest
 
@@ -487,23 +531,34 @@ _step_should_run "03b_demux_summary" && run_step "03b_demux_summary" _demux_summ
 # ── PASSO 4: DADA2 ───────────────────────────────────────────────────────────
 _dada2() {
     conda activate qiime2-amplicon-2026.4
-    local CMD=(
-        qiime dada2 denoise-paired
-        --i-demultiplexed-seqs "${OUTDIR}/qza/demux.qza"
-        --p-trunc-len-f "${TRUNC_F}"
-        --p-trunc-len-r "${TRUNC_R}"
-        --p-trim-left-f "${TRIM_F}"
-        --p-trim-left-r "${TRIM_R}"
-        --p-max-ee-f "${MAX_EE_F}"
-        --p-max-ee-r "${MAX_EE_R}"
-        --p-n-threads "${THREADS}"
-        --o-table "${OUTDIR}/qza/table.qza"
-        --o-representative-sequences "${OUTDIR}/qza/rep-seqs.qza"
-        --o-denoising-stats "${OUTDIR}/qza/denoising-stats.qza"
-        --o-base-transition-stats "${OUTDIR}/qza/base-transition-stats.qza"
-        --verbose
-    )
-    "${CMD[@]}"
+    if [ "${SEQ_MODE}" = "paired" ]; then
+        qiime dada2 denoise-paired \
+            --i-demultiplexed-seqs "${OUTDIR}/qza/demux.qza" \
+            --p-trunc-len-f "${TRUNC_F}" \
+            --p-trunc-len-r "${TRUNC_R}" \
+            --p-trim-left-f "${TRIM_F}" \
+            --p-trim-left-r "${TRIM_R}" \
+            --p-max-ee-f "${MAX_EE_F}" \
+            --p-max-ee-r "${MAX_EE_R}" \
+            --p-n-threads "${THREADS}" \
+            --o-table "${OUTDIR}/qza/table.qza" \
+            --o-representative-sequences "${OUTDIR}/qza/rep-seqs.qza" \
+            --o-denoising-stats "${OUTDIR}/qza/denoising-stats.qza" \
+            --o-base-transition-stats "${OUTDIR}/qza/base-transition-stats.qza" \
+            --verbose
+    else
+        qiime dada2 denoise-single \
+            --i-demultiplexed-seqs "${OUTDIR}/qza/demux.qza" \
+            --p-trunc-len "${TRUNC_F}" \
+            --p-trim-left "${TRIM_F}" \
+            --p-max-ee "${MAX_EE_F}" \
+            --p-n-threads "${THREADS}" \
+            --o-table "${OUTDIR}/qza/table.qza" \
+            --o-representative-sequences "${OUTDIR}/qza/rep-seqs.qza" \
+            --o-denoising-stats "${OUTDIR}/qza/denoising-stats.qza" \
+            --o-base-transition-stats "${OUTDIR}/qza/base-transition-stats.qza" \
+            --verbose
+    fi
 
     qiime metadata tabulate \
         --m-input-file "${OUTDIR}/qza/denoising-stats.qza" \
@@ -545,8 +600,10 @@ _filter_table() {
 
     qiime feature-table summarize \
         --i-table "${OUTDIR}/qza/table-filtered.qza" \
-        --m-sample-metadata-file "${METADATA}" \
-        --o-visualization "${OUTDIR}/qza/table-filtered.qzv"
+        --m-metadata-file "${METADATA}" \
+        --o-summary "${OUTDIR}/qzv/table-filtered.qzv" \
+        --o-feature-frequencies "${OUTDIR}/qza/feature-frequencies.qza" \
+        --o-sample-frequencies "${OUTDIR}/qza/sample-frequencies.qza"
 }
 _step_should_run "06_filter_table" && run_step "06_filter_table" _filter_table
 
@@ -573,15 +630,67 @@ _export() {
 }
 _step_should_run "07_export" && run_step "07_export" _export
 
+# ── PASSO 8: Barplot taxonômico ──────────────────────────────────────────────
+_barplot() {
+    conda activate qiime2-amplicon-2026.4
+    qiime taxa barplot \
+        --i-table "${OUTDIR}/qza/table-filtered.qza" \
+        --i-taxonomy "${OUTDIR}/taxonomy/taxonomy.qza" \
+        --m-metadata-file "${METADATA}" \
+        --o-visualization "${OUTDIR}/qzv/taxa-barplot.qzv"
+}
+_step_should_run "08_barplot" && run_step "08_barplot" _barplot
+
+# ── PASSO 9: Árvore filogenética (MAFFT + FastTree) ──────────────────────────
+_tree() {
+    conda activate qiime2-amplicon-2026.4
+    qiime phylogeny align-to-tree-mafft-fasttree \
+        --i-sequences "${OUTDIR}/taxonomy/rep-seqs-filtered.qza" \
+        --o-alignment "${OUTDIR}/qza/aligned-rep-seqs.qza" \
+        --o-masked-alignment "${OUTDIR}/qza/masked-aligned-rep-seqs.qza" \
+        --o-tree "${OUTDIR}/qza/unrooted-tree.qza" \
+        --o-rooted-tree "${OUTDIR}/qza/rooted-tree.qza" \
+        --p-n-threads "${THREADS}"
+}
+_step_should_run "09_tree" && run_step "09_tree" _tree
+
+# ── PASSO 10: Métricas de diversidade alfa + beta ────────────────────────────
+_diversity() {
+    conda activate qiime2-amplicon-2026.4
+    rm -rf "${OUTDIR}/diversity/"
+    qiime diversity core-metrics-phylogenetic \
+        --i-table "${OUTDIR}/qza/table-filtered.qza" \
+        --i-phylogeny "${OUTDIR}/qza/rooted-tree.qza" \
+        --m-metadata-file "${METADATA}" \
+        --p-sampling-depth "${SAMPLING_DEPTH}" \
+        --output-dir "${OUTDIR}/diversity/"
+}
+_step_should_run "10_diversity" && run_step "10_diversity" _diversity
+
+# ── PASSO 11: Curva de rarefação ─────────────────────────────────────────────
+_rarefaction() {
+    conda activate qiime2-amplicon-2026.4
+    qiime diversity alpha-rarefaction \
+        --i-table "${OUTDIR}/qza/table-filtered.qza" \
+        --i-phylogeny "${OUTDIR}/qza/rooted-tree.qza" \
+        --p-max-depth "${SAMPLING_DEPTH}" \
+        --m-metadata-file "${METADATA}" \
+        --o-visualization "${OUTDIR}/qzv/alpha-rarefaction.qzv"
+}
+_step_should_run "11_rarefaction" && run_step "11_rarefaction" _rarefaction
+
 # ── Fim ───────────────────────────────────────────────────────────────────────
 TOTAL_ELAPSED=$(_elapsed $(( SECONDS - PIPELINE_START )))
 echo ""
 hdr "╔══════════════════════════════════════════════════════════╗"
 echo -e "║  ${GREEN}✓ Pipeline concluído: ${PROJECT_NAME}${NC}"
 echo    "║"
-echo    "║  Resultados:  ${OUTDIR}/exports/"
-echo -e "║  Término:     $(date '+%Y-%m-%d %H:%M:%S')"
-echo -e "║  Tempo total: ${TOTAL_ELAPSED}"
+echo    "║  Exportados:   ${OUTDIR}/exports/"
+echo    "║  Visualiz.:    ${OUTDIR}/qzv/taxa-barplot.qzv"
+echo    "║                ${OUTDIR}/qzv/alpha-rarefaction.qzv"
+echo    "║  Diversidade:  ${OUTDIR}/diversity/"
+echo -e "║  Término:      $(date '+%Y-%m-%d %H:%M:%S')"
+echo -e "║  Tempo total:  ${TOTAL_ELAPSED}"
 hdr "╚══════════════════════════════════════════════════════════╝"
 echo ""
 bash "$(dirname "$0")/../scripts/05_validate_checklist.sh" "${OUTDIR}"

@@ -3,7 +3,7 @@
 # run_per_sample.sh — Processa cada amostra individualmente (modo banco de dados)
 #
 # Uso:
-#   bash auto-bash/run_per_sample.sh <samples.tsv> [opções]
+#   bash auto-bash/run_per_sample.sh <projeto.conf|samples.txt> [opções]
 #
 # Opções:
 #   --only  AMOSTRA    Processar apenas uma amostra (ex: --only SRR15247053)
@@ -24,6 +24,8 @@
 set -euo pipefail
 
 SAMPLES_FILE=""
+CONF_THREADS=16
+PROJECT_NAME=""
 ONLY_SAMPLE=""
 ONLY_STEP=""
 FROM_STEP=""
@@ -58,9 +60,20 @@ while [[ $# -gt 0 ]]; do
 done
 
 if [ -z "$SAMPLES_FILE" ]; then
-    echo "[ERRO] Informe o arquivo de amostras."
-    echo "Uso: bash auto-bash/run_per_sample.sh data/manifests/samples.tsv [--only SRR15247053]"
+    echo "[ERRO] Informe o arquivo de amostras ou config."
+    echo "Uso: bash auto-bash/run_per_sample.sh auto-bash/configs/projeto-XX.conf [--step download]"
     exit 1
+fi
+
+# Se for .conf, extrai SRA_IDS_FILE e defaults
+if [[ "$SAMPLES_FILE" == *.conf ]]; then
+    if [ ! -f "$SAMPLES_FILE" ]; then
+        echo "[ERRO] Config não encontrada: $SAMPLES_FILE"
+        exit 1
+    fi
+    source "$SAMPLES_FILE"
+    CONF_THREADS="${THREADS:-16}"
+    SAMPLES_FILE="${SRA_IDS_FILE}"
 fi
 
 if [ ! -f "$SAMPLES_FILE" ]; then
@@ -72,7 +85,11 @@ fi
 CLASSIFIER="refs/silva-138-99-515-806-nb-classifier.qza"
 CONDA_BASE="${HOME}/miniconda3"
 SRA_BIN="${HOME}/miniconda3/envs/sra-tools/bin"
-RESULTS_BASE="results/samples"
+if [ -n "${PROJECT_NAME:-}" ]; then
+    RESULTS_BASE="results/${PROJECT_NAME}/samples"
+else
+    RESULTS_BASE="results/samples"
+fi
 
 # ── Cores ─────────────────────────────────────────────────────────────────────
 GREEN='\033[0;32m'; YELLOW='\033[1;33m'; RED='\033[0;31m'
@@ -227,7 +244,7 @@ while IFS=$'\t' read -r sample_id trunc_f trunc_r trim_f trim_r max_ee_f max_ee_
     S_MAX_EE_F["$sample_id"]="${max_ee_f:-2}"
     S_MAX_EE_R["$sample_id"]="${max_ee_r:-2}"
     S_SEQ_MODE["$sample_id"]="${seq_mode:-paired}"
-    S_THREADS["$sample_id"]="${threads:-16}"
+    S_THREADS["$sample_id"]="${threads:-${CONF_THREADS}}"
 done < "$SAMPLES_FILE"
 
 if [ ${#SAMPLE_IDS[@]} -eq 0 ]; then
@@ -238,7 +255,11 @@ fi
 TOTAL_SAMPLES=${#SAMPLE_IDS[@]}
 echo ""
 hdr "╔══════════════════════════════════════════════════════════╗"
-hdr "║        Pipeline 16S rRNA — Modo Por Amostra"
+if [ -n "${PROJECT_NAME:-}" ]; then
+    hdr "║        Pipeline 16S rRNA — ${PROJECT_NAME}"
+else
+    hdr "║        Pipeline 16S rRNA — Modo Por Amostra"
+fi
 hdr "╠══════════════════════════════════════════════════════════╣"
 echo -e "║  Amostras:  ${TOTAL_SAMPLES}"
 echo -e "║  Etapas:    ${#ACTIVE_STEPS[@]} de ${#ALL_STEPS[@]}"
@@ -325,8 +346,7 @@ for SAMPLE_ID in "${SAMPLE_IDS[@]}"; do
         python3 "$(dirname "$0")/../scripts/build_manifest.py" \
             --reads-dir "${READS_DIR}" \
             --mode "${SEQ_MODE}" \
-            --output "${MANIFEST}" \
-            --sample-id "${SAMPLE_ID}"
+            --output "${MANIFEST}"
     }
     _step_active "02_manifest" && run_step "$SAMPLE_ID" "02_manifest" _do_manifest
 

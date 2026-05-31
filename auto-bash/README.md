@@ -81,24 +81,25 @@ bash auto-bash/run_pipeline.sh auto-bash/configs/projeto-01.conf --from taxonomy
 # 8. Rodar tudo do zero (ignora etapas concluídas)
 bash auto-bash/run_pipeline.sh auto-bash/configs/projeto-01.conf --reset-all
 
-# 9. Pular o quality e rodar o restante
-bash auto-bash/run_pipeline.sh auto-bash/configs/projeto-01.conf --from import --skip quality
+# 9. Já sabe os parâmetros TRUNC/TRIM → pular quality e ir direto para DADA2
+#    (requer download, manifest e import já concluídos)
+bash auto-bash/run_pipeline.sh auto-bash/configs/projeto-01.conf --from dada2
 ```
 
 ### Fluxo recomendado (primeira vez)
 
 ```bash
 # Passo 1: baixar
-bash auto-bash/run_pipeline.sh auto-bash/configs/projeto-01.conf --step download
+bash auto-bash/run_pipeline.sh auto-bash/configs/projeto-01.conf --reset download --step download
 
 # Passo 2: manifest
-bash auto-bash/run_pipeline.sh auto-bash/configs/projeto-01.conf --step manifest
+bash auto-bash/run_pipeline.sh auto-bash/configs/projeto-01.conf --reset manifest --step manifest
 
 # Passo 3: import
-bash auto-bash/run_pipeline.sh auto-bash/configs/projeto-01.conf --step import
+bash auto-bash/run_pipeline.sh auto-bash/configs/projeto-01.conf --reset import --step import
 
 # Passo 4: visualizar qualidade → abre .qzv em view.qiime2.org
-bash auto-bash/run_pipeline.sh auto-bash/configs/projeto-01.conf --step quality
+bash auto-bash/run_pipeline.sh auto-bash/configs/projeto-01.conf --reset quality --step quality
 #    Analise o gráfico e ajuste TRUNC_F e TRUNC_R no .conf
 
 # Passo 5: DADA2 (com parâmetros ajustados)
@@ -123,7 +124,10 @@ Os resultados ficam em `results/samples/<sample_id>/exports/`.
 ### Uso básico
 
 ```bash
-# Processar todas as amostras do arquivo
+# Processar todas as amostras do projeto (lê o .txt indicado no .conf)
+bash auto-bash/run_per_sample.sh auto-bash/configs/projeto-01.conf
+
+# Ou passando o arquivo .txt diretamente
 bash auto-bash/run_per_sample.sh data/manifests/sra_ids_projeto-01.txt
 
 # Ver etapas disponíveis
@@ -146,26 +150,60 @@ bash auto-bash/run_per_sample.sh --list
 
 ```bash
 # 1. Processar todas as amostras do início ao fim
-bash auto-bash/run_per_sample.sh data/manifests/sra_ids_projeto-01.txt
+bash auto-bash/run_per_sample.sh auto-bash/configs/projeto-01.conf
 
 # 2. Processar apenas uma amostra específica
-bash auto-bash/run_per_sample.sh data/manifests/sra_ids_projeto-01.txt \
+bash auto-bash/run_per_sample.sh auto-bash/configs/projeto-01.conf \
     --only SRR15247053
 
 # 3. Só baixar todas as amostras
-bash auto-bash/run_per_sample.sh data/manifests/sra_ids_projeto-01.txt --step download
+bash auto-bash/run_per_sample.sh auto-bash/configs/projeto-01.conf --step download
 
-# 4. DADA2 falhou em uma amostra → resetar e rerodar só ela
-bash auto-bash/run_per_sample.sh data/manifests/sra_ids_projeto-01.txt \
-    --only ERR10890547 --reset dada2 --step dada2
+# 4. Só gerar os manifests (requer download concluído)
+bash auto-bash/run_per_sample.sh auto-bash/configs/projeto-01.conf --step manifest
 
-# 5. Rerodar taxonomia em todas as amostras
-bash auto-bash/run_per_sample.sh data/manifests/sra_ids_projeto-01.txt --from taxonomy
+# 5. Só importar para .qza (requer manifest concluído)
+bash auto-bash/run_per_sample.sh auto-bash/configs/projeto-01.conf --step import
 
-# 6. Processar amostras de projetos diferentes no mesmo banco
-bash auto-bash/run_per_sample.sh data/manifests/sra_ids_projeto-01.txt
-bash auto-bash/run_per_sample.sh data/manifests/sra_ids_projeto-02.txt
+# 6. DADA2 falhou em uma amostra → resetar e rerodar só ela
+bash auto-bash/run_per_sample.sh auto-bash/configs/projeto-01.conf \
+    --only SRR15247053 --reset dada2 --step dada2
+
+# 7. Rerodar taxonomia em todas as amostras
+bash auto-bash/run_per_sample.sh auto-bash/configs/projeto-01.conf --from taxonomy
+
+# 8. Processar projetos diferentes no mesmo banco de dados
+bash auto-bash/run_per_sample.sh auto-bash/configs/projeto-01.conf
+bash auto-bash/run_per_sample.sh auto-bash/configs/projeto-02.conf
 ```
+
+### Fluxo recomendado (primeira vez)
+
+```bash
+# Passo 1: baixar as sequências
+bash auto-bash/run_per_sample.sh auto-bash/configs/projeto-01.conf --step download
+
+# Passo 2: gerar um manifest por amostra (lista os arquivos .fastq.gz para o QIIME 2)
+bash auto-bash/run_per_sample.sh auto-bash/configs/projeto-01.conf --step manifest
+
+# Passo 3: importar os FASTQs para o formato QIIME 2 (.qza)
+#    O QIIME 2 não trabalha com FASTQs diretamente — o import é obrigatório antes de
+#    qualquer etapa QIIME 2 (quality, dada2, taxonomy...)
+bash auto-bash/run_per_sample.sh auto-bash/configs/projeto-01.conf --step import
+
+# Passo 4: visualizar qualidade → abre .qzv em view.qiime2.org
+#    Analise e ajuste trunc_f/trunc_r no sra_ids_projeto-01.txt se necessário
+bash auto-bash/run_per_sample.sh auto-bash/configs/projeto-01.conf --step quality
+
+# Passo 5: DADA2 (denoising por amostra)
+bash auto-bash/run_per_sample.sh auto-bash/configs/projeto-01.conf --step dada2
+
+# Passo 6: taxonomia, filtro e export
+bash auto-bash/run_per_sample.sh auto-bash/configs/projeto-01.conf --from taxonomy
+```
+
+> **Nota:** as etapas são independentes por amostra. Se uma amostra falhar no DADA2,
+> use `--only <id> --reset dada2 --step dada2` para rerodar apenas ela.
 
 ### Estrutura dos resultados
 
@@ -274,8 +312,9 @@ ERR10890547    270      240      17      20      2         4         paired
 ```
 
 - Linhas com `#` são comentários (ignoradas)
-- Colunas além de `sample_id` são opcionais no modo projeto (usa valores do `.conf`)
-- Obrigatórias no modo por amostra (`run_per_sample.sh`)
+- O caminho para este arquivo é definido em `SRA_IDS_FILE` do `.conf`
+- No `run_per_sample.sh`, passe o `.conf` — ele localiza o `.txt` automaticamente
+- Todas as colunas além de `sample_id` são opcionais: valores ausentes usam os padrões do `.conf`
 
 ---
 
