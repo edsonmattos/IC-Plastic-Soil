@@ -1,1 +1,13 @@
-sample-id	absolute-filepath
+sample-id	forward-absolute-filepath	reverse-absolute-filepath
+SRR23373543	/Users/sukuna/projeto/ic/IC-Plastic-Soil/data/projeto-05/raw/samples/SRR23373543_1.fastq.gz	/Users/sukuna/projeto/ic/IC-Plastic-Soil/data/projeto-05/raw/samples/SRR23373543_2.fastq.gz
+SRR23373544	/Users/sukuna/projeto/ic/IC-Plastic-Soil/data/projeto-05/raw/samples/SRR23373544_1.fastq.gz	/Users/sukuna/projeto/ic/IC-Plastic-Soil/data/projeto-05/raw/samples/SRR23373544_2.fastq.gz
+SRR23373545	/Users/sukuna/projeto/ic/IC-Plastic-Soil/data/projeto-05/raw/samples/SRR23373545_1.fastq.gz	/Users/sukuna/projeto/ic/IC-Plastic-Soil/data/projeto-05/raw/samples/SRR23373545_2.fastq.gz
+SRR23373546	/Users/sukuna/projeto/ic/IC-Plastic-Soil/data/projeto-05/raw/samples/SRR23373546_1.fastq.gz	/Users/sukuna/projeto/ic/IC-Plastic-Soil/data/projeto-05/raw/samples/SRR23373546_2.fastq.gz
+SRR23373547	/Users/sukuna/projeto/ic/IC-Plastic-Soil/data/projeto-05/raw/samples/SRR23373547_1.fastq.gz	/Users/sukuna/projeto/ic/IC-Plastic-Soil/data/projeto-05/raw/samples/SRR23373547_2.fastq.gz
+SRR23373548	/Users/sukuna/projeto/ic/IC-Plastic-Soil/data/projeto-05/raw/samples/SRR23373548_1.fastq.gz	/Users/sukuna/projeto/ic/IC-Plastic-Soil/data/projeto-05/raw/samples/SRR23373548_2.fastq.gz
+SRR23373555	/Users/sukuna/projeto/ic/IC-Plastic-Soil/data/projeto-05/raw/samples/SRR23373555_1.fastq.gz	/Users/sukuna/projeto/ic/IC-Plastic-Soil/data/projeto-05/raw/samples/SRR23373555_2.fastq.gz
+SRR23373566	/Users/sukuna/projeto/ic/IC-Plastic-Soil/data/projeto-05/raw/samples/SRR23373566_1.fastq.gz	/Users/sukuna/projeto/ic/IC-Plastic-Soil/data/projeto-05/raw/samples/SRR23373566_2.fastq.gz
+SRR23373575	/Users/sukuna/projeto/ic/IC-Plastic-Soil/data/projeto-05/raw/samples/SRR23373575_1.fastq.gz	/Users/sukuna/projeto/ic/IC-Plastic-Soil/data/projeto-05/raw/samples/SRR23373575_2.fastq.gz
+SRR23373576	/Users/sukuna/projeto/ic/IC-Plastic-Soil/data/projeto-05/raw/samples/SRR23373576_1.fastq.gz	/Users/sukuna/projeto/ic/IC-Plastic-Soil/data/projeto-05/raw/samples/SRR23373576_2.fastq.gz
+SRR23373577	/Users/sukuna/projeto/ic/IC-Plastic-Soil/data/projeto-05/raw/samples/SRR23373577_1.fastq.gz	/Users/sukuna/projeto/ic/IC-Plastic-Soil/data/projeto-05/raw/samples/SRR23373577_2.fastq.gz
+SRR23373578	/Users/sukuna/projeto/ic/IC-Plastic-Soil/data/projeto-05/raw/samples/SRR23373578_1.fastq.gz	/Users/sukuna/projeto/ic/IC-Plastic-Soil/data/projeto-05/raw/samples/SRR23373578_2.fastq.gz
