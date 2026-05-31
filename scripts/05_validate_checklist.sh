@@ -24,7 +24,7 @@ echo ""
 
 # ── 1. Qualidade dos metadados ─────────────────────────────────────────────
 echo "1. Qualidade dos metadados"
-METADATA="${RESULTS}/../data/manifests/metadata.tsv"
+METADATA=$(ls "${RESULTS}/../data/manifests/metadata_"*.tsv 2>/dev/null | head -1)
 if [ -f "$METADATA" ]; then
     INVALID=$(grep -P '[\s!@#$%^&*()+=\[\]{};:'"'"'",<>?/\\|`~]' "$METADATA" \
               | grep -v "^#" | wc -l || true)
@@ -44,7 +44,7 @@ for qzv in \
     "${RESULTS}/qza/demux-summary.qzv" \
     "${RESULTS}/qza/denoising-stats.qzv" \
     "${RESULTS}/taxonomy/taxonomy.qzv" \
-    "${RESULTS}/qza/table-filtered.qzv"
+    "${RESULTS}/qzv/table-filtered.qzv"
 do
     if [ -f "$qzv" ]; then
         pass "$(basename $qzv)"
