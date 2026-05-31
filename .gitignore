@@ -12,6 +12,7 @@ work/
 data/raw/
 refs/
 results/
+*/raw/
 
 # ── Manifests gerados automaticamente (inputs manuais sra_ids/metadata são versionados) ──
 data/manifests/manifest_*.tsv
