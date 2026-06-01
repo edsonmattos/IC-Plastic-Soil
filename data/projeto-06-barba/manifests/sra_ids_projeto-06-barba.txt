@@ -1,0 +1,21 @@
+# sample_id	trunc_f	trunc_r	trim_f	trim_r	max_ee_f	max_ee_r	seq_mode
+# Projeto: PRJNA630025 — 16S V3-V4 (341F/806R), MiSeq 2x300 — Barba Peider (Alpes, Suíça)
+# Parâmetros: TRUNC_R=240 para melhor overlap (44 bp), MAX_EE_R=7 dado qualidade do reverse
+SRR11851974	270	240	17	20	2	7	paired
+SRR11851975	270	240	17	20	2	7	paired
+SRR11851978	270	240	17	20	2	7	paired
+SRR11851989	270	240	17	20	2	7	paired
+SRR11852000	270	240	17	20	2	7	paired
+SRR11852011	270	240	17	20	2	7	paired
+SRR11852022	270	240	17	20	2	7	paired
+SRR11852033	270	240	17	20	2	7	paired
+SRR11852036	270	240	17	20	2	7	paired
+SRR11852037	270	240	17	20	2	7	paired
+SRR11852038	270	240	17	20	2	7	paired
+SRR11852039	270	240	17	20	2	7	paired
+SRR11852040	270	240	17	20	2	7	paired
+SRR11852041	270	240	17	20	2	7	paired
+SRR11852042	270	240	17	20	2	7	paired
+SRR11852043	270	240	17	20	2	7	paired
+SRR11852044	270	240	17	20	2	7	paired
+SRR11852045	270	240	17	20	2	7	paired
