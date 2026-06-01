@@ -1,0 +1,11 @@
+01_download_sra
+03_qiime_import
+03b_demux_summary
+04_dada2
+05_taxonomy
+06_filter_table
+07_export
+08_barplot
+09_tree
+10_diversity
+11_rarefaction
