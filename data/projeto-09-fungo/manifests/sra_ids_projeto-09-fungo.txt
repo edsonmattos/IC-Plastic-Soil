@@ -1,0 +1,52 @@
+# sample_id	trunc_f	trunc_r	trim_f	trim_r	max_ee_f	max_ee_r	seq_mode
+# Parâmetros não preenchidos usam o padrão do .conf do projeto
+# Projeto: PRJNA1155845 — ITS fúngico, MiSeq 2x251, SUB14700743
+# ATENÇÃO: parâmetros ITS — sem TRUNC, primers ITS a confirmar
+SRR30517334	0	0	0	0	2	4	paired
+SRR30517335	0	0	0	0	2	4	paired
+SRR30517336	0	0	0	0	2	4	paired
+SRR30517337	0	0	0	0	2	4	paired
+SRR30517338	0	0	0	0	2	4	paired
+SRR30517339	0	0	0	0	2	4	paired
+SRR30517340	0	0	0	0	2	4	paired
+SRR30517341	0	0	0	0	2	4	paired
+SRR30517342	0	0	0	0	2	4	paired
+SRR30517343	0	0	0	0	2	4	paired
+SRR30517344	0	0	0	0	2	4	paired
+SRR30517345	0	0	0	0	2	4	paired
+SRR30517348	0	0	0	0	2	4	paired
+SRR30517349	0	0	0	0	2	4	paired
+SRR30517350	0	0	0	0	2	4	paired
+SRR30517351	0	0	0	0	2	4	paired
+SRR30517352	0	0	0	0	2	4	paired
+SRR30517353	0	0	0	0	2	4	paired
+SRR30517354	0	0	0	0	2	4	paired
+SRR30517355	0	0	0	0	2	4	paired
+SRR30517356	0	0	0	0	2	4	paired
+SRR30517357	0	0	0	0	2	4	paired
+SRR30517358	0	0	0	0	2	4	paired
+SRR30517359	0	0	0	0	2	4	paired
+SRR30517362	0	0	0	0	2	4	paired
+SRR30517363	0	0	0	0	2	4	paired
+SRR30517364	0	0	0	0	2	4	paired
+SRR30517365	0	0	0	0	2	4	paired
+SRR30517366	0	0	0	0	2	4	paired
+SRR30517367	0	0	0	0	2	4	paired
+SRR30517368	0	0	0	0	2	4	paired
+SRR30517369	0	0	0	0	2	4	paired
+SRR30517370	0	0	0	0	2	4	paired
+SRR30517371	0	0	0	0	2	4	paired
+SRR30517372	0	0	0	0	2	4	paired
+SRR30517373	0	0	0	0	2	4	paired
+SRR30517376	0	0	0	0	2	4	paired
+SRR30517377	0	0	0	0	2	4	paired
+SRR30517378	0	0	0	0	2	4	paired
+SRR30517379	0	0	0	0	2	4	paired
+SRR30517380	0	0	0	0	2	4	paired
+SRR30517381	0	0	0	0	2	4	paired
+SRR30517346	0	0	0	0	2	4	paired
+SRR30517347	0	0	0	0	2	4	paired
+SRR30517360	0	0	0	0	2	4	paired
+SRR30517361	0	0	0	0	2	4	paired
+SRR30517374	0	0	0	0	2	4	paired
+SRR30517375	0	0	0	0	2	4	paired

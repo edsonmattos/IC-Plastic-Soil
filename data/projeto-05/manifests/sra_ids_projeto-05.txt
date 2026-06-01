@@ -1,0 +1,15 @@
+# sample_id	trunc_f	trunc_r	trim_f	trim_r	max_ee_f	max_ee_r	seq_mode
+# Parâmetros não preenchidos usam o padrão do .conf do projeto
+# Projeto: PRJNA932786 — 16S V3-V4 (341F/806R), MiSeq 2x300, primers presentes
+SRR23373543	270	240	17	20	2	4	paired
+SRR23373544	270	240	17	20	2	4	paired
+SRR23373545	270	240	17	20	2	4	paired
+SRR23373546	270	240	17	20	2	4	paired
+SRR23373547	270	240	17	20	2	4	paired
+SRR23373548	270	240	17	20	2	4	paired
+SRR23373555	270	240	17	20	2	4	paired
+SRR23373566	270	240	17	20	2	4	paired
+SRR23373575	270	240	17	20	2	4	paired
+SRR23373576	270	240	17	20	2	4	paired
+SRR23373577	270	240	17	20	2	4	paired
+SRR23373578	270	240	17	20	2	4	paired
