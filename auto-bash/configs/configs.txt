@@ -1,0 +1,169 @@
+
+# =============================================================================
+# projeto PRJNA702448
+PROJECT_NAME="projeto-01"
+
+# Sequenciamento
+SEQ_MODE="paired"          # paired ou single
+
+# Parâmetros DADA2
+THREADS=16
+TRUNC_F=240                # Truncar Forward em X bp
+TRUNC_R=180                # Truncar Reverse em X bp
+TRIM_F=0                   # Remover X bp do início Forward
+TRIM_R=0                   # Remover X bp do início Reverse
+MAX_EE_F=2                 # Max erros esperados Forward
+MAX_EE_R=2                 # Max erros esperados Reverse
+
+# Diversidade
+SAMPLING_DEPTH= 6000        # Profundidade de rarefação (ver denoising-stats.qzv)
+
+# =============================================================================
+# projeto PRJEB59875
+PROJECT_NAME="projeto-02"
+
+# Sequenciamento
+SEQ_MODE="paired"          # paired ou single
+
+# Parâmetros DADA2
+THREADS=16
+TRUNC_F=270                # Truncar Forward em X bp
+TRUNC_R=250                # Truncar Reverse em X bp
+TRIM_F=17                   # Remover X bp do início Forward
+TRIM_R=20                   # Remover X bp do início Reverse
+MAX_EE_F=2                 # Max erros esperados Forward
+MAX_EE_R=4                 # Max erros esperados Reverse
+
+# Diversidade
+SAMPLING_DEPTH=48000        # Profundidade de rarefação (ver denoising-stats.qzv)
+
+# =============================================================================
+# projeto PRJNA1054347
+PROJECT_NAME="projeto-03"
+
+# Sequenciamento
+SEQ_MODE="single"          # paired ou single
+
+# Parâmetros DADA2
+THREADS=16
+TRUNC_F=215                # Truncar Forward em X bp
+TRUNC_R=0                # Truncar Reverse em X bp
+TRIM_F=20                   # Remover X bp do início Forward
+TRIM_R=0                   # Remover X bp do início Reverse
+MAX_EE_F=2                 # Max erros esperados Forward
+MAX_EE_R=2                 # Max erros esperados Reverse
+
+# Diversidade
+SAMPLING_DEPTH=105000        # Profundidade de rarefação (ver denoising-stats.qzv)
+
+# =============================================================================
+# projeto PRJNA1021161
+PROJECT_NAME="projeto-04"
+
+# Sequenciamento
+SEQ_MODE="single"          # single: amplicon V3-V4 ~466bp não permite overlap com 2x250
+
+# Parâmetros DADA2
+THREADS=10
+TRUNC_F=225                # min read após TRIM = 245-20 = 225 bp (qualidade Q37)
+TRUNC_R=0                  # não usado em single-end
+TRIM_F=20                  # primer 341F = 20 bp (ACTCCTACGGGNGGCWGCAG)
+TRIM_R=0                   # não usado em single-end
+MAX_EE_F=2                 # Max erros esperados Forward
+MAX_EE_R=2                 # não usado em single-end
+
+# Diversidade
+SAMPLING_DEPTH=47000        # Profundidade de rarefação (ver denoising-stats.qzv)
+
+# =============================================================================
+# projeto PRJNA932786
+PROJECT_NAME="projeto-05"
+
+# Sequenciamento
+SEQ_MODE="paired"          # single: amplicon V3-V4 ~466bp não permite overlap com 2x250
+
+# Parâmetros DADA2
+THREADS=10
+TRUNC_F=230                # min read após TRIM = 245-20 = 225 bp (qualidade Q37)
+TRUNC_R=210                # não usado em single-end
+TRIM_F=19                  # primer 341F = 20 bp (ACTCCTACGGGNGGCWGCAG)
+TRIM_R=20                   # não usado em single-end
+MAX_EE_F=2                 # Max erros esperados Forward
+MAX_EE_R=5                 # não usado em single-end
+
+# Diversidade
+SAMPLING_DEPTH=70000        # Profundidade de rarefação (ver denoising-stats.qzv)
+
+# =============================================================================
+# projeto-06-barba.conf — PRJNA630025
+# =============================================================================
+PROJECT_NAME="projeto-06-barba"
+
+SEQ_MODE="paired"
+
+THREADS=10
+TRUNC_F=270
+TRUNC_R=240
+TRIM_F=17
+TRIM_R=20
+MAX_EE_F=2
+MAX_EE_R=7
+
+SAMPLING_DEPTH=35000       # mínimo non-chimeric: SRR11851975 com 36.279
+
+# =============================================================================
+# projeto-06-villum.conf — PRJNA630025
+# =============================================================================
+PROJECT_NAME="projeto-06-villum"
+
+SEQ_MODE="single"          # forward degrada após bp 100-120; reverse pior; sem overlap viável
+
+THREADS=10
+TRUNC_F=220                # forward ~Q30 mediana até aqui; 220-17=203 bp úteis de V3
+TRUNC_R=0                  # não usado em single-end
+TRIM_F=17                  # primer 341F = 17 bp
+TRIM_R=0                   # não usado em single-end
+MAX_EE_F=2
+MAX_EE_R=2                 # não usado em single-end
+
+SAMPLING_DEPTH=10000       # definir após ver denoising-stats
+
+# =============================================================================
+# projeto PRJNA564156
+PROJECT_NAME="projeto-07"
+
+# Sequenciamento
+SEQ_MODE="paired"          # V4 (515F/806R), overlap ~177 bp com 2x250
+
+# Parâmetros DADA2
+THREADS=10
+TRUNC_F=230                # forward OK até ~bp 230; reads mín. 246 bp ✓
+TRUNC_R=200                # reverse degrada mais cedo; overlap 177 bp garantido
+TRIM_F=19                  # primer 515F = 19 bp (GTGYCAGCMGCCGCGGTAA)
+TRIM_R=20                  # primer 806R = 20 bp (GGACTACNVGGGTWTCTAAT)
+MAX_EE_F=2                 # Max erros esperados Forward
+MAX_EE_R=2                 # Max erros esperados Reverse
+
+# Diversidade
+SAMPLING_DEPTH=33000        # mínimo non-chimeric: SRR10076406 com 33.553 — mantém 168/168
+
+
+# =============================================================================
+# projeto PRJNA631499
+PROJECT_NAME="projeto-08"
+
+
+# Sequenciamento
+SEQ_MODE="paired"          # V4 (515F/806R), 2x251 bp, overlap ~177 bp
+
+# Parâmetros DADA2
+THREADS=10
+TRUNC_F=230                # qualidade Q37 mediana até aqui; reads 251 bp ✓
+TRUNC_R=200                # reverse degrada mais cedo; overlap = 177 bp garantido
+TRIM_F=19                  # primer 515F = 19 bp (GTGYCAGCMGCCGCGGTAA)
+TRIM_R=20                  # primer 806R = 20 bp (GGACTACNVGGGTWTCTAAT)
+MAX_EE_F=2                 # Max erros esperados Forward
+MAX_EE_R=2                 # Max erros esperados Reverse
+
+# Diversidade
+SAMPLING_DEPTH=40000        # exclui automaticamente SRR11749118 (2.484) e SRR11749120 (6.118); mantém
