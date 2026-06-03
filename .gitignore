@@ -33,3 +33,7 @@ __pycache__/
 # ── Sistema ──────────────────────────────────────────────────────────────────
 .DS_Store
 Thumbs.db
+
+# Python virtual environment
+pipeline/venv/
+.mcp.json
