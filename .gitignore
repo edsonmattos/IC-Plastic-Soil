@@ -1,3 +1,13 @@
+# ── Credenciais e segredos (NUNCA commitar) ──────────────────────────────────
+pipeline/chave/
+**/*credentials*.json
+**/*service-account*.json
+**/*serviceaccount*.json
+*.json.key
+.env
+.env.*
+!.env.example
+
 # ── Reuniões e arquivos internos ─────────────────────────────────────────────
 reunioes/
 prompt.MD
