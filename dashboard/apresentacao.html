@@ -1,0 +1,1108 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Microbioma · Microplásticos do Solo</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/reset.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/reveal.css">
+<style>
+/* ═══════════ TOKENS ═══════════ */
+:root{
+  --bg:#071510; --teal:#2dd4bf; --teal2:#5eead4; --green:#4ade80;
+  --orange:#f97316; --purple:#a78bfa; --red:#f87171; --amber:#fbbf24;
+  --muted:#4b7c60; --text:#d1fae5; --dim:#6b7280;
+  --glass:rgba(10,28,18,.78); --glass-b:rgba(45,212,191,.12);
+}
+
+/* ═══════════ REVEAL OVERRIDES ═══════════ */
+.reveal-viewport{ background:var(--bg); }
+.reveal{
+  font-family:'Segoe UI',system-ui,sans-serif;
+  font-size:1.42rem; color:var(--text);
+}
+/* VERTICAL CENTRING — the key fix */
+.reveal .slides section{
+  display:flex !important;
+  flex-direction:column;
+  justify-content:center;
+  align-items:stretch;
+  height:100%;
+  padding:1rem 1.6rem;
+  box-sizing:border-box;
+  text-align:left;
+}
+.reveal h1{font-size:2rem;line-height:1.2;font-weight:800;background:linear-gradient(135deg,var(--teal),var(--teal2),#7dd3fc);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.reveal h2{font-size:1.28rem;font-weight:700;color:var(--teal);border-bottom:1px solid #2dd4bf22;padding-bottom:.28rem;margin-bottom:.55rem;}
+.reveal h3{font-size:1rem;color:#86efac;margin-bottom:.35rem;}
+.reveal p,.reveal li{font-size:.84rem;color:#a7f3d0;line-height:1.55;}
+.reveal ul{margin-left:1.1rem;}
+.reveal li{margin-bottom:.28rem;}
+.reveal strong{color:var(--teal);}
+.reveal em{color:var(--purple);font-style:normal;}
+blockquote{border-left:3px solid var(--teal);background:var(--glass);backdrop-filter:blur(12px);padding:.5rem .9rem;border-radius:0 10px 10px 0;margin:.4rem 0;box-shadow:0 4px 24px rgba(0,0,0,.4);}
+blockquote p{color:#6ee7b7;font-style:italic;font-size:.82rem;margin:0;}
+
+/* ═══════════ GLASS CARDS ═══════════ */
+.card{
+  background:var(--glass);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);
+  border:1px solid var(--glass-b);border-radius:10px;padding:.45rem .8rem;margin:.25rem 0;
+  box-shadow:0 4px 20px rgba(0,0,0,.35),inset 0 1px 0 rgba(255,255,255,.04);
+}
+.card-t{border-left:3px solid var(--teal);}
+.card-g{border-left:3px solid var(--green);}
+.card-o{border-left:3px solid var(--orange);}
+.card-r{border-left:3px solid var(--red);}
+.card-p{border-left:3px solid var(--purple);}
+.card p{font-size:.75rem;margin:0;color:#a7f3d0;}
+.card strong{color:var(--teal);}
+.hi{background:rgba(45,212,191,.07);border:1px solid rgba(45,212,191,.25);border-radius:10px;padding:.4rem .8rem;margin:.35rem 0;}
+.hi p{color:#6ee7b7;font-size:.8rem;margin:0;}
+
+/* ═══════════ KPI ═══════════ */
+.kpis{display:flex;gap:.5rem;flex-wrap:wrap;}
+.kpi{
+  flex:1;min-width:80px;
+  background:var(--glass);backdrop-filter:blur(14px);
+  border:1px solid var(--glass-b);border-radius:12px;padding:.5rem .7rem;border-left:3px solid;
+  box-shadow:0 4px 20px rgba(0,0,0,.3);
+}
+.kpi .v{font-size:1.8rem;font-weight:800;line-height:1;}
+.kpi .l{font-size:.57rem;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;margin-top:.12rem;}
+.glow-t{text-shadow:0 0 18px #2dd4bf80,0 0 35px #2dd4bf30;}
+.glow-g{text-shadow:0 0 18px #4ade8080,0 0 35px #4ade8030;}
+.glow-o{text-shadow:0 0 18px #f9731680,0 0 35px #f9731630;}
+.glow-p{text-shadow:0 0 18px #a78bfa80,0 0 35px #a78bfa30;}
+
+/* ═══════════ TAGS ═══════════ */
+.tag{display:inline-block;background:rgba(45,212,191,.1);color:var(--teal);border:1px solid rgba(45,212,191,.28);border-radius:20px;padding:.1rem .55rem;font-size:.67rem;margin:.1rem;}
+.tag-g{background:rgba(74,222,128,.1);color:#4ade80;border-color:rgba(74,222,128,.28);}
+.tag-o{background:rgba(249,115,22,.1);color:#fb923c;border-color:rgba(249,115,22,.28);}
+.tag-p{background:rgba(167,139,250,.1);color:#c4b5fd;border-color:rgba(167,139,250,.28);}
+.tag-r{background:rgba(248,113,113,.1);color:#fca5a5;border-color:rgba(248,113,113,.28);}
+
+/* ═══════════ LAYOUT ═══════════ */
+.cols{display:flex;gap:.9rem;align-items:flex-start;}
+.col{flex:1;}
+.col40{flex:0 0 40%;}
+.col60{flex:0 0 58%;}
+.col35{flex:0 0 35%;}
+.col65{flex:0 0 63%;}
+
+/* ═══════════ TABLES ═══════════ */
+.reveal table{width:100%;border-collapse:collapse;font-size:.68rem;margin:.3rem 0;}
+.reveal table th{background:rgba(10,28,18,.9);color:var(--teal);padding:.3rem .5rem;text-align:left;border-bottom:2px solid rgba(45,212,191,.2);white-space:nowrap;font-weight:600;}
+.reveal table td{padding:.26rem .5rem;border-bottom:1px solid rgba(45,212,191,.06);color:#a7f3d0;}
+.reveal table tr:nth-child(even) td{background:rgba(45,212,191,.03);}
+.ok{color:#4ade80;} .warn{color:#fbbf24;} .bad{color:#f87171;}
+
+/* ═══════════ BARS ═══════════ */
+.sbar{display:flex;align-items:center;gap:.4rem;font-size:.67rem;margin:.15rem 0;}
+.sbar-label{width:115px;color:#6ee7b7;flex-shrink:0;}
+.sbar-track{flex:1;background:rgba(45,212,191,.08);border-radius:4px;height:12px;}
+.sbar-fill{height:12px;border-radius:4px;box-shadow:0 0 8px currentColor;}
+.sbar-val{width:36px;color:var(--text);text-align:right;flex-shrink:0;font-weight:700;}
+
+/* ═══════════ FLOW ═══════════ */
+.flow{display:flex;flex-direction:column;gap:.12rem;}
+.fstep{background:var(--glass);backdrop-filter:blur(10px);border:1px solid var(--glass-b);border-radius:7px;padding:.25rem .6rem;display:flex;align-items:center;gap:.45rem;font-size:.7rem;}
+.fstep.hl{border-color:rgba(45,212,191,.4);box-shadow:0 0 12px rgba(45,212,191,.15);}
+.farrow{text-align:center;color:rgba(45,212,191,.3);font-size:.75rem;line-height:1;}
+
+/* ═══════════ CODE ═══════════ */
+.code{background:rgba(5,12,8,.8);border:1px solid rgba(45,212,191,.15);border-radius:8px;padding:.4rem .65rem;font-family:monospace;font-size:.6rem;color:#6ee7b7;line-height:1.7;margin:.25rem 0;}
+
+/* ═══════════ MATRIX ═══════════ */
+.p3{color:#4ade80;font-weight:700;} .p2{color:#fbbf24;} .p1{color:#6b7280;} .p0{color:#1e3a2a;}
+
+/* ═══════════ ANIMATIONS ═══════════ */
+@keyframes floatA{0%,100%{transform:translateY(0) rotate(0deg)} 40%{transform:translateY(-12px) rotate(3deg)} 70%{transform:translateY(6px) rotate(-2deg)}}
+@keyframes floatB{0%,100%{transform:translateY(0) rotate(0deg)} 35%{transform:translateY(-8px) rotate(-4deg)} 65%{transform:translateY(10px) rotate(2deg)}}
+@keyframes floatC{0%,100%{transform:translateX(0)} 50%{transform:translateX(10px)}}
+@keyframes pulse{0%,100%{opacity:.2} 50%{opacity:.45}}
+@keyframes spin{from{transform:rotate(0deg)} to{transform:rotate(360deg)}}
+.fa{animation:floatA 5s ease-in-out infinite;}
+.fb{animation:floatB 7s ease-in-out infinite;}
+.fc{animation:floatC 6s ease-in-out infinite;}
+.pp{animation:pulse 3s ease-in-out infinite;}
+
+/* ═══════════ BG ═══════════ */
+.bg{position:absolute;inset:0;pointer-events:none;overflow:hidden;}
+.sc{position:relative;z-index:1;}
+
+/* ═══════════ SECTION BADGE ═══════════ */
+.sbadge{display:inline-block;background:rgba(45,212,191,.12);border:1px solid rgba(45,212,191,.3);color:var(--teal);border-radius:20px;padding:.1rem .6rem;font-size:.62rem;text-transform:uppercase;letter-spacing:.1em;margin-bottom:.4rem;}
+</style>
+</head>
+<body>
+<div class="reveal">
+<div class="slides">
+
+<!-- ════════════════════════════════════════════════
+  S1 · TÍTULO
+════════════════════════════════════════════════ -->
+<section data-background-color="#071510">
+  <div class="bg">
+    <svg width="100%" height="100%" viewBox="0 0 1100 700" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid slice">
+      <!-- SOIL LAYERS -->
+      <rect x="0" y="565" width="1100" height="32" fill="#92400e" opacity=".35"/>
+      <rect x="0" y="600" width="1100" height="38" fill="#78350f" opacity=".4"/>
+      <rect x="0" y="641" width="1100" height="59" fill="#5c2d0e" opacity=".45"/>
+      <!-- ROOTS -->
+      <path d="M140 565 Q125 600 108 650 Q98 678 95 700" stroke="#4ade80" stroke-width="2" fill="none" opacity=".4"/>
+      <path d="M140 565 Q155 605 168 650" stroke="#4ade80" stroke-width="1.5" fill="none" opacity=".35"/>
+      <path d="M480 565 Q470 605 460 660 Q453 685 450 700" stroke="#4ade80" stroke-width="2" fill="none" opacity=".4"/>
+      <path d="M820 565 Q830 608 845 655" stroke="#4ade80" stroke-width="1.5" fill="none" opacity=".35"/>
+      <path d="M980 565 Q975 600 965 645 Q958 670 955 700" stroke="#4ade80" stroke-width="2" fill="none" opacity=".4"/>
+      <!-- PLASTIC IN SOIL -->
+      <polygon points="70,580 92,572 104,590 95,608 70,610 57,593" fill="none" stroke="#f97316" stroke-width="2" opacity=".5"/>
+      <line x1="82" y1="584" x2="96" y2="596" stroke="#f97316" stroke-width="1.2" opacity=".4"/>
+      <polygon points="310,588 334,580 346,600 337,618 311,620 298,602" fill="none" stroke="#ef4444" stroke-width="2" opacity=".5"/>
+      <polygon points="620,575 642,567 654,586 645,604 620,606 607,588" fill="none" stroke="#f97316" stroke-width="2" opacity=".5"/>
+      <polygon points="880,582 902,574 915,592 906,610 880,612 867,594" fill="none" stroke="#fbbf24" stroke-width="2" opacity=".45"/>
+      <!-- BACTERIA - top area floating -->
+      <g class="fa" style="transform-origin:860px 100px">
+        <ellipse cx="860" cy="100" rx="36" ry="18" fill="none" stroke="#2dd4bf" stroke-width="2.5" opacity=".55"/>
+        <line x1="896" y1="95" x2="916" y2="85" stroke="#2dd4bf" stroke-width="2" opacity=".5"/>
+        <line x1="896" y1="105" x2="918" y2="113" stroke="#2dd4bf" stroke-width="2" opacity=".5"/>
+        <circle cx="850" cy="97" r="5" fill="#2dd4bf" opacity=".4"/>
+        <circle cx="865" cy="103" r="3.5" fill="#2dd4bf" opacity=".4"/>
+      </g>
+      <g class="fb" style="transform-origin:940px 220px">
+        <circle cx="940" cy="220" r="26" fill="none" stroke="#a78bfa" stroke-width="2.5" opacity=".5"/>
+        <circle cx="932" cy="214" r="4.5" fill="#a78bfa" opacity=".4"/>
+        <circle cx="946" cy="225" r="3.5" fill="#a78bfa" opacity=".35"/>
+        <line x1="940" y1="194" x2="940" y2="178" stroke="#a78bfa" stroke-width="2" opacity=".5"/>
+        <line x1="960" y1="207" x2="975" y2="199" stroke="#a78bfa" stroke-width="2" opacity=".5"/>
+      </g>
+      <g class="fa" style="transform-origin:1000px 360px;animation-delay:-2s">
+        <path d="M 968 360 Q 984 348 1000 360 Q 1016 372 1032 360" fill="none" stroke="#f59e0b" stroke-width="2.5" opacity=".5"/>
+        <line x1="1032" y1="360" x2="1045" y2="352" stroke="#f59e0b" stroke-width="2" opacity=".5"/>
+      </g>
+      <g class="fb" style="transform-origin:870px 440px;animation-delay:-1s">
+        <ellipse cx="870" cy="440" rx="28" ry="14" fill="none" stroke="#4ade80" stroke-width="2" opacity=".45"/>
+        <circle cx="860" cy="437" r="3.5" fill="#4ade80" opacity=".4"/>
+        <line x1="898" y1="436" x2="912" y2="428" stroke="#4ade80" stroke-width="1.8" opacity=".45"/>
+      </g>
+      <!-- DNA STRAND -->
+      <path d="M820 490 Q840 478 860 490 Q880 502 900 490 Q920 478 940 490 Q960 502 980 490" fill="none" stroke="#4ade80" stroke-width="2" opacity=".35"/>
+      <path d="M820 512 Q840 500 860 512 Q880 524 900 512 Q920 500 940 512 Q960 524 980 512" fill="none" stroke="#4ade80" stroke-width="2" opacity=".35"/>
+      <line x1="860" y1="490" x2="860" y2="512" stroke="#4ade80" stroke-width="1.5" opacity=".3"/>
+      <line x1="900" y1="490" x2="900" y2="512" stroke="#4ade80" stroke-width="1.5" opacity=".3"/>
+      <line x1="940" y1="490" x2="940" y2="512" stroke="#4ade80" stroke-width="1.5" opacity=".3"/>
+      <!-- GLOW CIRCLES (ambient) -->
+      <circle cx="900" cy="300" r="180" fill="none" stroke="#2dd4bf" stroke-width="1" opacity=".06"/>
+      <circle cx="900" cy="300" r="120" fill="none" stroke="#2dd4bf" stroke-width="1" opacity=".08"/>
+    </svg>
+  </div>
+
+  <div class="sc" style="max-width:680px">
+    <div style="font-size:.7rem;color:var(--teal);text-transform:uppercase;letter-spacing:.12em;margin-bottom:.6rem;opacity:.8">
+      Iniciação Científica · Bioinformática
+    </div>
+    <h1 style="margin-bottom:.9rem">
+      Microbioma Associado a<br>Microplásticos do Solo:
+      <br><span style="background:linear-gradient(135deg,#a78bfa,#c4b5fd);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">Uma Revisão Metanalítica</span>
+    </h1>
+    <div style="display:flex;gap:.35rem;flex-wrap:wrap;margin-bottom:1rem">
+      <span class="tag">9 estudos primários</span>
+      <span class="tag">554 amostras</span>
+      <span class="tag">6 países</span>
+      <span class="tag">11 tipos de plástico</span>
+      <span class="tag-p">QIIME2 2026.4</span>
+      <span class="tag-p">DADA2 · SILVA 138</span>
+      <span class="tag-g">PostgreSQL</span>
+    </div>
+    <div class="kpis" style="max-width:520px">
+      <div class="kpi" style="border-color:var(--teal)"><div class="v glow-t" style="color:var(--teal)">9</div><div class="l">Estudos</div></div>
+      <div class="kpi" style="border-color:var(--green)"><div class="v glow-g" style="color:var(--green)">554</div><div class="l">Amostras</div></div>
+      <div class="kpi" style="border-color:var(--purple)"><div class="v glow-p" style="color:var(--purple)">6</div><div class="l">Países</div></div>
+      <div class="kpi" style="border-color:var(--orange)"><div class="v glow-o" style="color:var(--orange)">11</div><div class="l">Plásticos</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- ════════════════════════════════════════════════
+  S2 · O QUE É METANÁLISE
+════════════════════════════════════════════════ -->
+<section data-background-color="#071510">
+  <div class="bg">
+    <svg width="100%" height="100%" viewBox="0 0 1100 700" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid slice">
+      <!-- Evidence pyramid (right side, large) -->
+      <polygon points="820,80 1080,480 560,480" fill="none" stroke="#2dd4bf" stroke-width="2" opacity=".12"/>
+      <polygon points="820,140 1020,430 620,430" fill="none" stroke="#2dd4bf" stroke-width="1.5" opacity=".1"/>
+      <polygon points="820,200 960,380 680,380" fill="none" stroke="#4ade80" stroke-width="1.5" opacity=".1"/>
+      <polygon points="820,270 900,340 740,340" fill="none" stroke="#4ade80" stroke-width="1.5" opacity=".1"/>
+      <polygon points="820,300 875,340 765,340" fill="#2dd4bf" opacity=".08"/>
+      <text x="820" y="325" text-anchor="middle" fill="#2dd4bf" font-size="11" opacity=".3" font-weight="bold">META</text>
+      <!-- Floating particles -->
+      <circle cx="150" cy="150" r="4" fill="#2dd4bf" opacity=".15" class="pp"/>
+      <circle cx="200" cy="300" r="3" fill="#4ade80" opacity=".12" class="pp" style="animation-delay:-1s"/>
+      <circle cx="120" cy="450" r="5" fill="#a78bfa" opacity=".1" class="pp" style="animation-delay:-2s"/>
+    </svg>
+  </div>
+  <div class="sc">
+    <div class="sbadge">Contextualização</div>
+    <h2>O que é uma Revisão Metanalítica?</h2>
+    <blockquote>
+      <p>Não coleta dados novos — <strong>sintetiza e reanálisa</strong> estudos existentes com método padronizado. Produz evidência mais robusta que qualquer estudo individual.</p>
+    </blockquote>
+    <div class="cols" style="margin-top:.6rem">
+      <div class="col">
+        <div class="card card-o" style="margin-bottom:.35rem">
+          <p><strong>Estudo individual:</strong> um solo · um plástico · um país · pipeline próprio</p>
+        </div>
+        <div class="card card-t" style="margin-bottom:.35rem">
+          <p><strong>Esta metanálise:</strong> 9 solos · 11 plásticos · 6 países · pipeline único</p>
+        </div>
+        <div class="hi" style="margin-top:.5rem">
+          <p><strong>Contribuição original:</strong> padronização de 9 pipelines + banco integrado + padrões impossíveis de ver individualmente</p>
+        </div>
+      </div>
+      <div class="col40">
+        <p style="font-size:.72rem;margin-bottom:.35rem"><strong>Hierarquia de evidências:</strong></p>
+        <table>
+          <tr><td style="color:#4ade80">★★★★★</td><td><strong>Revisão metanalítica</strong> ← aqui</td></tr>
+          <tr><td style="color:#6b7280">★★★★</td><td>Revisão narrativa</td></tr>
+          <tr><td style="color:#6b7280">★★★</td><td>Estudo observacional</td></tr>
+          <tr><td style="color:#6b7280">★★</td><td>Estudo de caso isolado</td></tr>
+        </table>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ════════════════════════════════════════════════
+  S3 · O PROBLEMA
+════════════════════════════════════════════════ -->
+<section data-background-color="#071510">
+  <div class="bg">
+    <!-- Soil cross-section full width -->
+    <svg width="100%" height="100%" viewBox="0 0 1100 700" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid slice">
+      <rect x="0" y="510" width="1100" height="50" fill="#92400e" opacity=".3"/>
+      <rect x="0" y="563" width="1100" height="65" fill="#78350f" opacity=".35"/>
+      <rect x="0" y="630" width="1100" height="70" fill="#5c2d0e" opacity=".4"/>
+      <!-- many plastic fragments -->
+      <polygon points="50,525 70,518 80,535 72,550 50,552 40,536" fill="none" stroke="#f97316" stroke-width="2" opacity=".55"/>
+      <polygon points="200,530 222,522 233,540 224,556 200,558 188,542" fill="none" stroke="#ef4444" stroke-width="2" opacity=".5"/>
+      <polygon points="380,528 400,520 412,538 403,554 379,556 367,540" fill="none" stroke="#fbbf24" stroke-width="2" opacity=".5"/>
+      <polygon points="550,535 572,527 584,545 575,561 551,563 539,547" fill="none" stroke="#f97316" stroke-width="2" opacity=".55"/>
+      <polygon points="720,525 742,517 754,535 745,551 721,553 709,537" fill="none" stroke="#ef4444" stroke-width="2" opacity=".5"/>
+      <polygon points="900,532 922,524 934,542 925,558 901,560 889,544" fill="none" stroke="#f97316" stroke-width="2" opacity=".55"/>
+      <polygon points="1050,528 1075,520 1085,540 1076,556 1050,558 1038,541" fill="none" stroke="#fbbf24" stroke-width="2" opacity=".45"/>
+      <!-- roots -->
+      <path d="M270 510 Q258 555 245 610 Q238 645 235 700" stroke="#4ade80" stroke-width="1.8" fill="none" opacity=".35"/>
+      <path d="M630 510 Q618 558 605 615" stroke="#4ade80" stroke-width="1.8" fill="none" opacity=".35"/>
+      <path d="M900 510 Q910 558 922 615" stroke="#4ade80" stroke-width="1.6" fill="none" opacity=".3"/>
+      <!-- ambient glow around plastic areas -->
+      <circle cx="550" cy="420" r="200" fill="#f97316" opacity=".025"/>
+    </svg>
+  </div>
+  <div class="sc">
+    <div class="sbadge">Problema</div>
+    <h2>O Problema — Fragmentação da Literatura</h2>
+    <div class="cols">
+      <div class="col60">
+        <p style="font-size:.86rem;margin-bottom:.5rem"><strong>430 M ton/ano</strong> de plástico chegam ao solo — que abriga <strong>25% da biodiversidade global</strong>.</p>
+        <div class="card card-r" style="margin-bottom:.3rem">
+          <p>Cada grupo usa pipeline diferente → resultados <strong>incomparáveis entre si</strong></p>
+        </div>
+        <div class="card card-o" style="margin-bottom:.3rem">
+          <p>Pergunta sem resposta: <em>plásticos biodegradáveis são ecologicamente seguros para o microbioma?</em></p>
+        </div>
+        <div class="hi" style="margin-top:.4rem">
+          <p><strong>Solução:</strong> reprocessar todos com pipeline único → comparação direta pela primeira vez</p>
+        </div>
+      </div>
+      <div class="col40">
+        <div class="card card-t" style="margin-bottom:.28rem"><p>🇩🇪 Alemanha — PBSA — 31 amostras, pipeline A</p></div>
+        <div class="card card-t" style="margin-bottom:.28rem"><p>🇨🇳 China — PE, PLA — 111 amostras, pipeline B</p></div>
+        <div class="card card-t" style="margin-bottom:.28rem"><p>🇺🇸 EUA — 7 polímeros — 168 amostras, pipeline C</p></div>
+        <div class="card card-t" style="margin-bottom:.28rem"><p>🇮🇹 Itália — HDPE, PE, PBAT — 61 amostras, pipeline D</p></div>
+        <p style="font-size:.65rem;color:#f87171;margin-top:.2rem">↑ Não comparáveis diretamente</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ════════════════════════════════════════════════
+  S4 · OBJETIVOS
+════════════════════════════════════════════════ -->
+<section data-background-color="#071510">
+  <div class="bg">
+    <svg width="100%" height="100%" viewBox="0 0 1100 700" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid slice">
+      <!-- Large DNA helix, right side -->
+      <g opacity=".18">
+        <path d="M920 20 Q960 80 1000 20 Q1040 -40 1080 20 Q1120 80 1100 140" fill="none" stroke="#4ade80" stroke-width="3"/>
+        <path d="M920 20 Q880 80 840 20 Q800 -40 780 20 Q760 80 780 140" fill="none" stroke="#4ade80" stroke-width="3"/>
+        <path d="M920 140 Q960 200 1000 140 Q1040 80 1080 140 Q1100 180 1090 240" fill="none" stroke="#4ade80" stroke-width="3"/>
+        <path d="M920 140 Q880 200 840 140 Q800 80 780 140 Q760 200 780 260" fill="none" stroke="#4ade80" stroke-width="3"/>
+        <path d="M910 260 Q950 320 990 260 Q1030 200 1070 260 Q1090 300 1085 360" fill="none" stroke="#a78bfa" stroke-width="3"/>
+        <path d="M910 260 Q870 320 830 260 Q790 200 760 260 Q740 320 750 380" fill="none" stroke="#a78bfa" stroke-width="3"/>
+        <path d="M908 380 Q948 440 988 380 Q1028 320 1068 380 Q1088 420 1082 480" fill="none" stroke="#2dd4bf" stroke-width="3"/>
+        <path d="M908 380 Q868 440 828 380 Q788 320 758 380 Q738 440 748 500" fill="none" stroke="#2dd4bf" stroke-width="3"/>
+        <!-- rungs -->
+        <line x1="850" y1="80" x2="952" y2="80" stroke="#4ade80" stroke-width="2.5"/>
+        <line x1="840" y1="200" x2="942" y2="200" stroke="#4ade80" stroke-width="2.5"/>
+        <line x1="848" y1="320" x2="950" y2="320" stroke="#a78bfa" stroke-width="2.5"/>
+        <line x1="846" y1="440" x2="948" y2="440" stroke="#2dd4bf" stroke-width="2.5"/>
+      </g>
+    </svg>
+  </div>
+  <div class="sc">
+    <div class="sbadge">Objetivos</div>
+    <h2>Objetivos da Revisão</h2>
+    <div class="card card-p" style="margin-bottom:.6rem">
+      <p><strong>Pergunta PICO:</strong> Em solos com microplásticos <span style="color:var(--muted)">(P)</span>, diferentes polímeros <span style="color:var(--muted)">(I)</span> alteram a diversidade bacteriana <span style="color:var(--muted)">(O)</span>, comparados entre si <span style="color:var(--muted)">(C)</span>, em síntese de estudos 16S rRNA?</p>
+    </div>
+    <div class="cols">
+      <div class="col">
+        <h3>Objetivos Específicos</h3>
+        <ul style="font-size:.79rem">
+          <li>Busca sistemática SRA/ENA com critérios PRISMA documentados</li>
+          <li>Reprocessar dados brutos com pipeline QIIME2 padronizado</li>
+          <li>Construir banco relacional PostgreSQL (star schema)</li>
+          <li>Quantificar efeito do polímero na diversidade alfa (Shannon H', Faith PD)</li>
+          <li>Identificar táxons associados a cada tipo de plástico</li>
+          <li>Gerar mapa de frequência e relevância taxonômica cruzada</li>
+        </ul>
+      </div>
+      <div class="col40">
+        <div class="kpis" style="flex-direction:column;gap:.35rem">
+          <div class="kpi" style="border-color:var(--teal)"><div class="v glow-t" style="color:var(--teal)">9</div><div class="l">Estudos incluídos</div></div>
+          <div class="kpi" style="border-color:var(--green)"><div class="v glow-g" style="color:var(--green)">554</div><div class="l">Amostras totais</div></div>
+          <div class="kpi" style="border-color:var(--purple)"><div class="v glow-p" style="color:var(--purple)">190K</div><div class="l">ASVs gerados</div></div>
+          <div class="kpi" style="border-color:var(--orange)"><div class="v glow-o" style="color:var(--orange)">11</div><div class="l">Tipos de plástico</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ════════════════════════════════════════════════
+  S5 · CORPUS
+════════════════════════════════════════════════ -->
+<section data-background-color="#071510">
+  <div class="bg">
+    <svg width="100%" height="100%" viewBox="0 0 1100 700" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid slice">
+      <!-- World map grid (right) -->
+      <g opacity=".1" transform="translate(620,60)">
+        <ellipse cx="210" cy="270" rx="200" ry="200" fill="none" stroke="#2dd4bf" stroke-width="1.5"/>
+        <ellipse cx="210" cy="270" rx="110" ry="200" fill="none" stroke="#2dd4bf" stroke-width="1"/>
+        <ellipse cx="210" cy="270" rx="200" ry="80" fill="none" stroke="#2dd4bf" stroke-width="1"/>
+        <ellipse cx="210" cy="270" rx="200" ry="140" fill="none" stroke="#2dd4bf" stroke-width="1"/>
+        <line x1="10" y1="270" x2="410" y2="270" stroke="#2dd4bf" stroke-width="1"/>
+        <line x1="210" y1="70" x2="210" y2="470" stroke="#2dd4bf" stroke-width="1"/>
+        <!-- Location dots for study countries -->
+        <circle cx="158" cy="185" r="7" fill="#f97316" opacity=".8"/><!-- DE -->
+        <circle cx="162" cy="195" r="7" fill="#f97316" opacity=".8"/><!-- IT -->
+        <circle cx="280" cy="200" r="7" fill="#f97316" opacity=".8"/><!-- CN -->
+        <circle cx="75" cy="195" r="7" fill="#f97316" opacity=".8"/><!-- US -->
+        <circle cx="210" cy="155" r="7" fill="#4ade80" opacity=".8"/><!-- GL -->
+        <circle cx="168" cy="187" r="7" fill="#f97316" opacity=".8"/><!-- CH -->
+        <!-- Glow behind dots -->
+        <circle cx="210" cy="155" r="14" fill="#4ade80" opacity=".15"/>
+      </g>
+    </svg>
+  </div>
+  <div class="sc">
+    <div class="sbadge">Seleção Sistemática</div>
+    <h2>Corpus Final — 9 Estudos Incluídos</h2>
+    <table>
+      <thead>
+        <tr><th>Estudo</th><th>País</th><th>Amplicon</th><th>Modo</th><th style="text-align:center">N</th><th>Plástico(s)</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>projeto-01</td><td>🇩🇪 Alemanha</td><td>V3-V4</td><td>paired 2×300</td><td style="text-align:center">31</td><td>PBSA</td></tr>
+        <tr><td>projeto-03</td><td>🇮🇹 Itália</td><td>V3-V4</td><td>paired 2×300</td><td style="text-align:center">61</td><td>HDPE, PBAT, PE</td></tr>
+        <tr><td>projeto-04</td><td>🇨🇳 China</td><td>V3-V4</td><td>single 1×250</td><td style="text-align:center">111</td><td>PE, PLA</td></tr>
+        <tr><td>projeto-05</td><td>🇺🇸 EUA</td><td>V4</td><td>paired 2×300</td><td style="text-align:center">12</td><td>PBAT, PE</td></tr>
+        <tr><td>projeto-06-barba</td><td>🇨🇭 Suíça</td><td>V3-V4</td><td>paired 2×300</td><td style="text-align:center">18</td><td>PBAT, PE, PLA</td></tr>
+        <tr><td>projeto-06-villum</td><td>🇬🇱 Groenlândia</td><td>V3-V4</td><td>single 1×250</td><td style="text-align:center">17</td><td>PBAT, PE, PLA</td></tr>
+        <tr><td>projeto-07</td><td>🇺🇸 EUA</td><td>V4</td><td>paired 2×250</td><td style="text-align:center">168</td><td>PE, PLA, blendas</td></tr>
+        <tr><td>projeto-08</td><td>🇺🇸 EUA</td><td>V4</td><td>paired 2×251</td><td style="text-align:center">88</td><td>PE, blendas biod.</td></tr>
+        <tr><td>projeto-09-bacteria</td><td>🇨🇳 China</td><td>V4</td><td>paired 2×251</td><td style="text-align:center">48</td><td>PET, PLA</td></tr>
+      </tbody>
+    </table>
+    <p style="font-size:.62rem;color:var(--muted);margin-top:.3rem">
+      <strong>Critérios:</strong> 16S rRNA · solo com plástico identificado · dados brutos no SRA/ENA · Bacteria/Archaea
+    </p>
+  </div>
+</section>
+
+<!-- ════════════════════════════════════════════════
+  S6 · PIPELINE
+════════════════════════════════════════════════ -->
+<section data-background-color="#071510">
+  <div class="bg">
+    <svg width="100%" height="100%" viewBox="0 0 1100 700" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid slice">
+      <!-- Microscope silhouette (large, left) -->
+      <g opacity=".1" transform="translate(20,50)">
+        <rect x="90" y="40" width="18" height="120" rx="8" fill="#2dd4bf"/>
+        <rect x="72" y="152" width="54" height="20" rx="6" fill="#2dd4bf"/>
+        <rect x="78" y="172" width="42" height="80" rx="6" fill="#2dd4bf"/>
+        <rect x="50" y="248" width="98" height="18" rx="5" fill="#4ade80"/>
+        <rect x="35" y="265" width="128" height="14" rx="4" fill="#2dd4bf"/>
+        <rect x="40" y="278" width="118" height="65" rx="6" fill="#2dd4bf"/>
+        <rect x="25" y="340" width="148" height="16" rx="5" fill="#2dd4bf"/>
+        <rect x="50" y="355" width="98" height="70" rx="5" fill="#4ade80"/>
+        <line x1="99" y1="40" x2="99" y2="15" stroke="#2dd4bf" stroke-width="7"/>
+        <ellipse cx="99" cy="10" rx="14" ry="14" fill="#4ade80"/>
+        <!-- light beam -->
+        <path d="M 40 280 L 5 380 L 85 380 Z" fill="#4ade80" opacity=".15"/>
+      </g>
+    </svg>
+  </div>
+  <div class="sc">
+    <div class="sbadge">Metodologia</div>
+    <h2>Pipeline de Reprocessamento Padronizado</h2>
+    <div class="cols">
+      <div class="col60">
+        <div class="flow">
+          <div class="fstep"><span>📥</span><div><strong>Download</strong> — SRA Tools &nbsp;<span style="color:var(--muted);font-size:.62rem">prefetch + fasterq-dump → FASTQs brutos</span></div></div>
+          <div class="farrow">↓</div>
+          <div class="fstep"><span>🔬</span><div><strong>QIIME2 2026.4</strong> — Import + Qualidade &nbsp;<span style="color:var(--muted);font-size:.62rem">Manifest format · demux-summary</span></div></div>
+          <div class="farrow">↓</div>
+          <div class="fstep"><span>✂️</span><div><strong>DADA2</strong> — Denoising + ASVs &nbsp;<span style="color:var(--muted);font-size:.62rem">Trim/Trunc por amplicon · remoção de quimeras</span></div></div>
+          <div class="farrow">↓</div>
+          <div class="fstep"><span>🧬</span><div><strong>SILVA 138</strong> — Classificação taxonômica &nbsp;<span style="color:var(--muted);font-size:.62rem">Full-length · sklearn 1.4.2</span></div></div>
+          <div class="farrow">↓</div>
+          <div class="fstep"><span>📊</span><div><strong>Diversidade</strong> — Alfa + Beta &nbsp;<span style="color:var(--muted);font-size:.62rem">Shannon · Faith PD · Bray-Curtis · UniFrac</span></div></div>
+          <div class="farrow">↓</div>
+          <div class="fstep hl"><span>🗄️</span><div><strong>PostgreSQL</strong> — Banco Metanalítico &nbsp;<span style="color:var(--muted);font-size:.62rem">Star schema · ETL Python · Dashboard</span></div></div>
+        </div>
+      </div>
+      <div class="col40">
+        <h3 style="margin-bottom:.4rem">Por que padronizar?</h3>
+        <div class="card card-r" style="margin-bottom:.3rem"><p><strong>Antes:</strong> 9 pipelines → resultados incomparáveis</p></div>
+        <div class="card card-g" style="margin-bottom:.3rem"><p><strong>Depois:</strong> mesmo classificador, mesma versão → comparação direta</p></div>
+        <div class="card card-t" style="margin-bottom:.3rem"><p><strong>Heterogeineidade técnica:</strong> controlada<br><strong>Heterogeneidade biológica:</strong> quantificada</p></div>
+        <div class="hi"><p>Parâmetros DADA2 variam por amplicon e modo — documentados em Tabela S1 do artigo</p></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ════════════════════════════════════════════════
+  S7 · BANCO DE DADOS
+════════════════════════════════════════════════ -->
+<section data-background-color="#071510">
+  <div class="bg">
+    <svg width="100%" height="100%" viewBox="0 0 1100 700" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid slice">
+      <!-- database cylinders (large, right) -->
+      <g opacity=".12" transform="translate(760,80)">
+        <ellipse cx="160" cy="30" rx="130" ry="28" fill="none" stroke="#2dd4bf" stroke-width="2.5"/>
+        <rect x="30" y="30" width="260" height="90" fill="none" stroke="#2dd4bf" stroke-width="2.5"/>
+        <ellipse cx="160" cy="120" rx="130" ry="28" fill="none" stroke="#2dd4bf" stroke-width="2.5"/>
+        <ellipse cx="160" cy="175" rx="130" ry="28" fill="none" stroke="#4ade80" stroke-width="2"/>
+        <rect x="30" y="175" width="260" height="80" fill="none" stroke="#4ade80" stroke-width="2"/>
+        <ellipse cx="160" cy="255" rx="130" ry="28" fill="none" stroke="#4ade80" stroke-width="2"/>
+        <ellipse cx="160" cy="305" rx="130" ry="28" fill="none" stroke="#a78bfa" stroke-width="2"/>
+        <rect x="30" y="305" width="260" height="75" fill="none" stroke="#a78bfa" stroke-width="2"/>
+        <ellipse cx="160" cy="380" rx="130" ry="28" fill="none" stroke="#a78bfa" stroke-width="2"/>
+        <!-- labels -->
+        <text x="160" y="78" text-anchor="middle" fill="#2dd4bf" font-size="14" opacity=".5">dim_*</text>
+        <text x="160" y="222" text-anchor="middle" fill="#4ade80" font-size="14" opacity=".5">fact_alpha</text>
+        <text x="160" y="350" text-anchor="middle" fill="#a78bfa" font-size="14" opacity=".5">fact_abundance</text>
+      </g>
+    </svg>
+  </div>
+  <div class="sc">
+    <div class="sbadge">Banco de Dados</div>
+    <h2>Star Schema PostgreSQL — Coração da Metanálise</h2>
+    <div class="cols">
+      <div class="col60">
+        <div class="code">
+<span style="color:#2dd4bf">dim_country</span> ──┐<br>
+<span style="color:#2dd4bf">dim_polymer</span> ──┤<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;├──► <span style="color:#a78bfa">dim_sample</span> ──► <span style="color:#4ade80">fact_alpha_diversity</span><br>
+<span style="color:#2dd4bf">dim_project</span> ──┤&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;└──► <span style="color:#4ade80">fact_denoising_stats</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;└────────────────► <span style="color:#4ade80">fact_feature_abundance</span> ──► <span style="color:#f97316">dim_taxonomy</span>
+        </div>
+        <p style="font-size:.64rem;color:var(--muted);margin:.4rem 0 .2rem">Consulta metanalítica — Shannon médio por polímero:</p>
+        <div class="code">
+<span style="color:#a78bfa">SELECT</span> polymer_type, <span style="color:#4ade80">ROUND(AVG</span>(shannon)<span style="color:#4ade80">,2)</span>, <span style="color:#4ade80">COUNT(*)</span><br>
+<span style="color:#a78bfa">FROM</span> fact_alpha_diversity a<br>
+<span style="color:#a78bfa">JOIN</span> dim_sample s ... <span style="color:#a78bfa">JOIN</span> dim_polymer p ...<br>
+<span style="color:#a78bfa">GROUP BY</span> polymer_type <span style="color:#a78bfa">ORDER BY</span> <span style="color:#4ade80">AVG</span>(shannon) <span style="color:#a78bfa">DESC</span>;
+        </div>
+      </div>
+      <div class="col">
+        <h3 style="margin-bottom:.35rem">O que o banco permite</h3>
+        <div class="card card-t" style="margin-bottom:.28rem"><p>📊 Shannon médio PE vs PLA em <strong>todos os estudos</strong></p></div>
+        <div class="card card-t" style="margin-bottom:.28rem"><p>🧬 Quais filos co-ocorrem com PLA?</p></div>
+        <div class="card card-t" style="margin-bottom:.28rem"><p>🌍 Diversidade por país controlando plástico</p></div>
+        <div class="card card-t" style="margin-bottom:.28rem"><p>🔗 Correlação pH/SOC × diversidade</p></div>
+        <div class="card card-g" style="margin-top:.4rem"><p><strong>Dashboard:</strong> filtros cross-project, heatmaps, treemap, mapa</p></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ════════════════════════════════════════════════
+  S8 · QUALIDADE DADA2
+════════════════════════════════════════════════ -->
+<section data-background-color="#071510">
+  <div class="bg">
+    <svg width="100%" height="100%" viewBox="0 0 1100 700" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid slice">
+      <g opacity=".1" transform="translate(880,100)">
+        <path d="M10 200 A 170 170 0 0 1 350 200" fill="none" stroke="#334155" stroke-width="30" stroke-linecap="round"/>
+        <path d="M10 200 A 170 170 0 0 1 350 200" fill="none" stroke="#4ade80" stroke-width="22" stroke-linecap="round" stroke-dasharray="534" stroke-dashoffset="120"/>
+        <circle cx="180" cy="200" r="20" fill="#2dd4bf"/>
+        <line x1="180" y1="200" x2="180" y2="60" stroke="#2dd4bf" stroke-width="10" stroke-linecap="round"/>
+        <text x="180" y="270" text-anchor="middle" fill="#4ade80" font-size="40" font-weight="bold">OK</text>
+      </g>
+    </svg>
+  </div>
+  <div class="sc">
+    <div class="sbadge">Qualidade</div>
+    <h2>Qualidade dos Estudos — Estatísticas DADA2</h2>
+    <p style="font-size:.69rem;color:var(--muted);margin-bottom:.35rem">Análogo ao <em>risk of bias</em> em metanálises clínicas — confiabilidade do processamento de cada estudo</p>
+    <table>
+      <thead>
+        <tr><th>Estudo</th><th>País</th><th>Input Reads</th><th>% Filtrado</th><th>% Merged</th><th>% Não-Quim.</th><th>Status</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>projeto-01</td><td>🇩🇪</td><td>4,26 M</td><td>94.7%</td><td>57.5%</td><td class="bad">17.1%</td><td class="warn">⚠ Baixa</td></tr>
+        <tr><td>projeto-03</td><td>🇮🇹</td><td>7,36 M</td><td>90.6%</td><td>25.4%</td><td class="ok">78.6%</td><td class="ok">✓ Alta</td></tr>
+        <tr><td>projeto-04</td><td>🇨🇳</td><td>8,33 M</td><td>100.0%</td><td style="color:var(--muted)">—¹</td><td class="ok">93.0%</td><td class="ok">✓ Alta</td></tr>
+        <tr><td>projeto-05</td><td>🇺🇸</td><td>1,70 M</td><td>91.9%</td><td>75.3%</td><td class="ok">72.5%</td><td class="ok">✓ Alta</td></tr>
+        <tr><td>projeto-06-barba</td><td>🇨🇭</td><td>2,48 M</td><td>64.1%</td><td>52.1%</td><td class="warn">49.6%</td><td class="warn">⚠ Mod.</td></tr>
+        <tr><td>projeto-06-villum</td><td>🇬🇱</td><td>0,91 M</td><td>82.4%</td><td style="color:var(--muted)">—¹</td><td class="ok">76.6%</td><td class="ok">✓ Alta</td></tr>
+        <tr><td>projeto-07</td><td>🇺🇸</td><td>14,60 M</td><td>88.6%</td><td>72.5%</td><td class="ok">71.4%</td><td class="ok">✓ Alta</td></tr>
+        <tr><td>projeto-08</td><td>🇺🇸</td><td>17,15 M</td><td>84.1%</td><td>81.4%</td><td class="ok">79.6%</td><td class="ok">✓ Alta</td></tr>
+        <tr><td>projeto-09</td><td>🇨🇳</td><td>4,97 M</td><td>91.5%</td><td>61.7%</td><td class="ok">60.2%</td><td class="ok">✓ Alta</td></tr>
+      </tbody>
+    </table>
+    <p style="font-size:.6rem;color:var(--muted);margin-top:.25rem">¹ Single-end — sem merge &nbsp;|&nbsp; ⚠ projeto-01: 5 amostras com >90% quimeras (lotes distintos de biblioteca)</p>
+  </div>
+</section>
+
+<!-- ════════════════════════════════════════════════
+  S9 · DIVERSIDADE POR PLÁSTICO
+════════════════════════════════════════════════ -->
+<section data-background-color="#071510">
+  <div class="bg">
+    <svg width="100%" height="100%" viewBox="0 0 1100 700" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid slice">
+      <!-- Large plastic fragments scattered -->
+      <g opacity=".13">
+        <polygon points="820,50 880,30 910,70 895,115 830,120 800,80" fill="none" stroke="#f97316" stroke-width="3"/>
+        <line x1="845" y1="65" x2="878" y2="90" stroke="#f97316" stroke-width="2"/>
+        <line x1="835" y1="90" x2="868" y2="75" stroke="#f97316" stroke-width="2"/>
+        <polygon points="950,200 1010,180 1042,222 1026,268 960,273 928,232" fill="none" stroke="#ef4444" stroke-width="3"/>
+        <polygon points="850,380 910,360 940,402 924,446 858,450 826,408" fill="none" stroke="#fbbf24" stroke-width="2.5"/>
+        <polygon points="970,530 1030,510 1060,550 1044,595 978,600 946,560" fill="none" stroke="#f97316" stroke-width="3"/>
+        <!-- Polymer chain -->
+        <circle cx="850" cy="600" r="12" fill="none" stroke="#2dd4bf" stroke-width="2"/>
+        <circle cx="890" cy="620" r="12" fill="none" stroke="#2dd4bf" stroke-width="2"/>
+        <circle cx="930" cy="600" r="12" fill="none" stroke="#2dd4bf" stroke-width="2"/>
+        <circle cx="970" cy="620" r="12" fill="none" stroke="#2dd4bf" stroke-width="2"/>
+        <circle cx="1010" cy="600" r="12" fill="none" stroke="#2dd4bf" stroke-width="2"/>
+        <line x1="862" y1="606" x2="878" y2="614" stroke="#2dd4bf" stroke-width="1.5"/>
+        <line x1="902" y1="614" x2="918" y2="606" stroke="#2dd4bf" stroke-width="1.5"/>
+        <line x1="942" y1="606" x2="958" y2="614" stroke="#2dd4bf" stroke-width="1.5"/>
+        <line x1="982" y1="614" x2="998" y2="606" stroke="#2dd4bf" stroke-width="1.5"/>
+      </g>
+    </svg>
+  </div>
+  <div class="sc">
+    <div class="sbadge">Resultados</div>
+    <h2>Shannon H' por Tipo de Plástico — Síntese de 554 Amostras</h2>
+    <div class="cols">
+      <div class="col60">
+        <div class="sbar"><div class="sbar-label">HDPE</div><div class="sbar-track"><div class="sbar-fill" style="width:97%;background:#22c55e"></div></div><div class="sbar-val">10.25</div></div>
+        <div class="sbar"><div class="sbar-label">Polyester blend</div><div class="sbar-track"><div class="sbar-fill" style="width:95%;background:#22c55e"></div></div><div class="sbar-val">9.97</div></div>
+        <div class="sbar"><div class="sbar-label">PBAT</div><div class="sbar-track"><div class="sbar-fill" style="width:92%;background:#4ade80"></div></div><div class="sbar-val">9.62</div></div>
+        <div class="sbar"><div class="sbar-label">PE</div><div class="sbar-track"><div class="sbar-fill" style="width:90%;background:#4ade80"></div></div><div class="sbar-val">9.48</div></div>
+        <div class="sbar"><div class="sbar-label">starch/PBAT</div><div class="sbar-track"><div class="sbar-fill" style="width:72%;background:#fbbf24"></div></div><div class="sbar-val">7.56</div></div>
+        <div class="sbar"><div class="sbar-label">PLA/PBAT</div><div class="sbar-track"><div class="sbar-fill" style="width:70%;background:#fbbf24"></div></div><div class="sbar-val">7.40</div></div>
+        <div class="sbar"><div class="sbar-label">PLA</div><div class="sbar-track"><div class="sbar-fill" style="width:69%;background:#fbbf24"></div></div><div class="sbar-val">7.32</div></div>
+        <div class="sbar"><div class="sbar-label">PLA/PHA</div><div class="sbar-track"><div class="sbar-fill" style="width:67%;background:#fbbf24"></div></div><div class="sbar-val">7.11</div></div>
+        <div class="sbar"><div class="sbar-label">PBSA</div><div class="sbar-track"><div class="sbar-fill" style="width:50%;background:#f97316"></div></div><div class="sbar-val">5.19</div></div>
+        <div class="sbar"><div class="sbar-label">PET</div><div class="sbar-track"><div class="sbar-fill" style="width:28%;background:#ef4444"></div></div><div class="sbar-val">2.97</div></div>
+        <!-- Legend -->
+        <div style="display:flex;gap:.6rem;font-size:.6rem;margin-top:.4rem">
+          <span><span style="display:inline-block;width:10px;height:10px;background:#22c55e;border-radius:2px;margin-right:.2rem"></span>Alta diversidade</span>
+          <span><span style="display:inline-block;width:10px;height:10px;background:#fbbf24;border-radius:2px;margin-right:.2rem"></span>Moderada</span>
+          <span><span style="display:inline-block;width:10px;height:10px;background:#ef4444;border-radius:2px;margin-right:.2rem"></span>Baixa</span>
+        </div>
+      </div>
+      <div class="col">
+        <div class="card card-g" style="margin-bottom:.35rem"><p><strong>Padrão:</strong> convencionais (PE, HDPE) → maior diversidade bacteriana</p></div>
+        <div class="card card-o" style="margin-bottom:.35rem"><p><strong>Achado central:</strong> biodegradáveis (PLA, PBSA) → <strong>menor diversidade</strong></p></div>
+        <div class="card card-r" style="margin-bottom:.35rem"><p><strong>PET</strong> Shannon = 2.97 — seletividade extrema. Apenas Proteobacteria.</p></div>
+        <div class="hi"><p>⚠ Confundidor: PE tem 138 amostras em 7 países vs PBSA com 9 em 1 país. Análise controlada por país necessária.</p></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ════════════════════════════════════════════════
+  S10 · DIVERSIDADE POR PAÍS
+════════════════════════════════════════════════ -->
+<section data-background-color="#071510">
+  <div class="bg">
+    <svg width="100%" height="100%" viewBox="0 0 1100 700" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid slice">
+      <!-- Arctic/extreme biome hints -->
+      <g opacity=".09">
+        <circle cx="900" cy="350" r="280" fill="none" stroke="#2dd4bf" stroke-width="2"/>
+        <circle cx="900" cy="350" r="200" fill="none" stroke="#2dd4bf" stroke-width="1.5"/>
+        <circle cx="900" cy="350" r="120" fill="none" stroke="#a78bfa" stroke-width="1.5"/>
+        <circle cx="900" cy="350" r="50" fill="#2dd4bf" opacity=".05"/>
+        <!-- Concentric rings for globe feel -->
+        <ellipse cx="900" cy="350" rx="280" ry="110" fill="none" stroke="#2dd4bf" stroke-width="1"/>
+        <ellipse cx="900" cy="350" rx="280" ry="200" fill="none" stroke="#2dd4bf" stroke-width="1"/>
+        <line x1="620" y1="350" x2="1180" y2="350" stroke="#2dd4bf" stroke-width="1"/>
+        <line x1="900" y1="70" x2="900" y2="630" stroke="#2dd4bf" stroke-width="1"/>
+      </g>
+    </svg>
+  </div>
+  <div class="sc">
+    <div class="sbadge">Resultados</div>
+    <h2>Diversidade Alfa por País / Bioma</h2>
+    <div class="cols">
+      <div class="col60">
+        <table>
+          <thead>
+            <tr><th>País</th><th>N</th><th>Shannon</th><th>Faith PD</th><th>Bioma</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>🇮🇹 Itália</td><td>61</td><td class="ok">10.57</td><td>206.4</td><td>Mediterrâneo</td></tr>
+            <tr><td>🇺🇸 EUA (p07)</td><td>168</td><td class="ok">9.91</td><td>110.2</td><td>Pradaria</td></tr>
+            <tr><td>🇨🇳 China (p04)</td><td>111</td><td class="ok">9.43</td><td>175.0</td><td>Subtropical</td></tr>
+            <tr><td>🇬🇱 Groenlândia</td><td>17</td><td class="warn">8.04</td><td>39.7</td><td>Ártico</td></tr>
+            <tr><td>🇨🇭 Suíça</td><td>18</td><td class="warn">7.80</td><td>56.6</td><td>Alpino</td></tr>
+            <tr><td>🇩🇪 Alemanha</td><td>31</td><td class="warn">5.38</td><td>18.8</td><td>Temperado</td></tr>
+            <tr><td>🇺🇸 EUA (p08)</td><td>88</td><td class="warn">5.12</td><td>31.5</td><td>Agrícola</td></tr>
+            <tr><td>🇨🇳 China (p09)</td><td>48</td><td class="bad">2.89</td><td>12.3</td><td>Subtropical</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="col">
+        <div class="card card-t" style="margin-bottom:.35rem"><p><strong>Variação maior entre países</strong> (2.89–10.57) que entre plásticos no mesmo estudo</p></div>
+        <div class="card card-p" style="margin-bottom:.35rem"><p><strong>Faith PD</strong> disponível para <strong>todos os projetos</strong> — riqueza filogenética completa</p></div>
+        <div class="card card-o"><p><strong>Resultado metanalítico:</strong> contexto edáfico pode ser mais determinante que o tipo de plástico</p></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ════════════════════════════════════════════════
+  S11 · CORE MICROBIOME
+════════════════════════════════════════════════ -->
+<section data-background-color="#071510">
+  <div class="bg">
+    <svg width="100%" height="100%" viewBox="0 0 1100 700" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid slice">
+      <!-- Phylogenetic tree (large, right) -->
+      <g opacity=".12" transform="translate(730,30)">
+        <line x1="180" y1="20" x2="180" y2="80" stroke="#2dd4bf" stroke-width="3"/>
+        <line x1="180" y1="80" x2="80" y2="160" stroke="#2dd4bf" stroke-width="2.5"/>
+        <line x1="180" y1="80" x2="280" y2="160" stroke="#2dd4bf" stroke-width="2.5"/>
+        <line x1="80" y1="160" x2="30" y2="240" stroke="#4ade80" stroke-width="2"/>
+        <line x1="80" y1="160" x2="130" y2="240" stroke="#4ade80" stroke-width="2"/>
+        <line x1="280" y1="160" x2="230" y2="240" stroke="#4ade80" stroke-width="2"/>
+        <line x1="280" y1="160" x2="330" y2="240" stroke="#4ade80" stroke-width="2"/>
+        <line x1="30" y1="240" x2="10" y2="320" stroke="#a78bfa" stroke-width="1.8"/>
+        <line x1="30" y1="240" x2="50" y2="320" stroke="#a78bfa" stroke-width="1.8"/>
+        <line x1="130" y1="240" x2="110" y2="320" stroke="#a78bfa" stroke-width="1.8"/>
+        <line x1="130" y1="240" x2="150" y2="320" stroke="#a78bfa" stroke-width="1.8"/>
+        <line x1="230" y1="240" x2="210" y2="320" stroke="#a78bfa" stroke-width="1.8"/>
+        <line x1="230" y1="240" x2="250" y2="320" stroke="#a78bfa" stroke-width="1.8"/>
+        <line x1="330" y1="240" x2="310" y2="320" stroke="#a78bfa" stroke-width="1.8"/>
+        <line x1="330" y1="240" x2="350" y2="320" stroke="#a78bfa" stroke-width="1.8"/>
+        <!-- leaves -->
+        <circle cx="180" cy="20" r="8" fill="#2dd4bf"/>
+        <circle cx="10" cy="325" r="6" fill="#a78bfa"/>
+        <circle cx="50" cy="325" r="6" fill="#a78bfa"/>
+        <circle cx="110" cy="325" r="6" fill="#4ade80"/>
+        <circle cx="150" cy="325" r="6" fill="#4ade80"/>
+        <circle cx="210" cy="325" r="6" fill="#a78bfa"/>
+        <circle cx="250" cy="325" r="6" fill="#4ade80"/>
+        <circle cx="310" cy="325" r="6" fill="#a78bfa"/>
+        <circle cx="350" cy="325" r="6" fill="#2dd4bf"/>
+        <!-- Level labels -->
+        <text x="-20" y="25" fill="#2dd4bf" font-size="11" opacity=".5">Domínio</text>
+        <text x="-20" y="165" fill="#4ade80" font-size="11" opacity=".5">Filo</text>
+        <text x="-20" y="245" fill="#a78bfa" font-size="11" opacity=".5">Classe</text>
+      </g>
+    </svg>
+  </div>
+  <div class="sc">
+    <div class="sbadge">Taxonomia</div>
+    <h2>Core Microbiome — Padrão Metanalítico (≥7/9 estudos)</h2>
+    <table style="font-size:.63rem">
+      <thead>
+        <tr><th>Filo</th><th>🇩🇪</th><th>🇮🇹</th><th>🇨🇳₄</th><th>🇺🇸₅</th><th>🇨🇭</th><th>🇬🇱</th><th>🇺🇸₇</th><th>🇺🇸₈</th><th>🇨🇳₉</th><th>Ubiq.</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><strong>Proteobacteria</strong></td><td class="p3">●●●</td><td class="p3">●●●</td><td class="p3">●●●</td><td class="p3">●●●</td><td class="p3">●●●</td><td class="p2">●●</td><td class="p2">●●</td><td class="p3">●●●</td><td class="p1">●</td><td class="ok">9/9</td></tr>
+        <tr><td><strong>Actinobacteriota</strong></td><td class="p2">●●</td><td class="p3">●●●</td><td class="p2">●●</td><td class="p2">●●</td><td class="p1">●</td><td class="p2">●●</td><td class="p2">●●</td><td class="p3">●●●</td><td class="p0">—</td><td class="ok">8/9</td></tr>
+        <tr><td><strong>Acidobacteriota</strong></td><td class="p2">●●</td><td class="p3">●●●</td><td class="p2">●●</td><td class="p3">●●●</td><td class="p2">●●</td><td class="p3">●●●</td><td class="p3">●●●</td><td class="p1">●</td><td class="p0">—</td><td class="ok">8/9</td></tr>
+        <tr><td><strong>Bacteroidota</strong></td><td class="p3">●●●</td><td class="p3">●●●</td><td class="p3">●●●</td><td class="p3">●●●</td><td class="p3">●●●</td><td class="p1">●</td><td class="p1">●</td><td class="p3">●●●</td><td class="p0">—</td><td class="ok">8/9</td></tr>
+        <tr><td><strong>Chloroflexi</strong></td><td class="p2">●●</td><td class="p3">●●●</td><td class="p2">●●</td><td class="p2">●●</td><td class="p3">●●●</td><td class="p2">●●</td><td class="p3">●●●</td><td class="p2">●●</td><td class="p0">—</td><td class="ok">8/9</td></tr>
+        <tr><td><strong>Patescibacteria</strong></td><td class="p0">—</td><td class="p2">●●</td><td class="p2">●●</td><td class="p2">●●</td><td class="p3">●●●</td><td class="p3">●●●</td><td class="p2">●●</td><td class="p3">●●●</td><td class="p0">—</td><td class="warn">7/9</td></tr>
+      </tbody>
+    </table>
+    <p style="font-size:.58rem;color:var(--muted);margin:.2rem 0 .35rem">●●● &gt;15% reads · ●● 5–15% · ● 1–5% · — &lt;1%</p>
+    <div class="cols">
+      <div class="col"><div class="card card-r"><p><strong>Patescibacteria:</strong> parasitas de bactérias — dominância indica perturbação comunitária</p></div></div>
+      <div class="col"><div class="card card-t"><p><strong>Actinobacteriota</strong> lidera globalmente: 6,15 M reads — ciclagem de carbono, ubíqua em solos com plástico</p></div></div>
+    </div>
+  </div>
+</section>
+
+<!-- ════════════════════════════════════════════════
+  S12 · MAPA DE RELEVÂNCIA
+════════════════════════════════════════════════ -->
+<section data-background-color="#071510">
+  <div class="sc">
+    <div class="sbadge">Mapa de Relevância</div>
+    <h2>Frequência, Localização e Relevância — Projetos × Dimensões</h2>
+    <table style="font-size:.63rem">
+      <thead>
+        <tr><th>Dimensão analítica</th><th>🇩🇪</th><th>🇮🇹</th><th>🇨🇳₄</th><th>🇺🇸₅</th><th>🇨🇭</th><th>🇬🇱</th><th>🇺🇸₇</th><th>🇺🇸₈</th><th>🇨🇳₉</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Alta diversidade (Shannon&gt;9)</td><td>—</td><td class="ok">✓✓</td><td class="ok">✓</td><td class="ok">✓</td><td>—</td><td>—</td><td class="ok">✓✓</td><td>—</td><td>—</td></tr>
+        <tr><td>Baixa diversidade (Shannon&lt;6)</td><td class="warn">✓</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td class="warn">✓</td><td class="bad">✓✓</td></tr>
+        <tr><td>Efeito PLA documentado</td><td>—</td><td>—</td><td class="ok">✓</td><td>—</td><td class="ok">✓</td><td class="ok">✓</td><td class="ok">✓</td><td class="ok">✓</td><td class="ok">✓✓</td></tr>
+        <tr><td>PE convencional</td><td>—</td><td class="ok">✓</td><td class="ok">✓</td><td class="ok">✓</td><td class="ok">✓</td><td class="ok">✓</td><td class="ok">✓✓</td><td class="ok">✓</td><td>—</td></tr>
+        <tr><td>Bioma extremo</td><td>—</td><td>—</td><td>—</td><td>—</td><td class="warn">✓Alpine</td><td class="ok">✓✓Arctic</td><td>—</td><td>—</td><td>—</td></tr>
+        <tr><td>Maior poder estatístico</td><td>—</td><td class="ok">✓</td><td class="ok">✓✓</td><td>—</td><td>—</td><td>—</td><td class="ok">✓✓✓</td><td class="ok">✓✓</td><td class="ok">✓</td></tr>
+        <tr><td>Dados pH/SOC disponíveis</td><td>—</td><td>—</td><td class="ok">✓</td><td class="ok">✓</td><td class="ok">✓</td><td class="ok">✓</td><td class="ok">✓</td><td>—</td><td>—</td></tr>
+        <tr><td>Archaea detectada</td><td class="ok">✓</td><td class="ok">✓</td><td>—</td><td class="ok">✓</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr>
+        <tr><td>PET — seletividade extrema</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td class="bad">✓✓</td></tr>
+      </tbody>
+    </table>
+    <p style="font-size:.6rem;color:var(--muted);margin-top:.25rem">✓✓✓ referência principal · ✓✓ contribuição forte · ✓ contribuição moderada</p>
+  </div>
+</section>
+
+<!-- ════════════════════════════════════════════════
+  S13 · DISCUSSÃO
+════════════════════════════════════════════════ -->
+<section data-background-color="#071510">
+  <div class="bg">
+    <svg width="100%" height="100%" viewBox="0 0 1100 700" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid slice">
+      <!-- Bacteria clustering near plastic (right side, large) -->
+      <g opacity=".16" transform="translate(700,80)">
+        <!-- Plastic fragment (large) -->
+        <polygon points="150,70 230,40 268,90 252,158 165,168 120,112" fill="none" stroke="#f97316" stroke-width="3.5"/>
+        <line x1="175" y1="85" x2="225" y2="118" stroke="#f97316" stroke-width="2"/>
+        <line x1="160" y1="120" x2="210" y2="100" stroke="#f97316" stroke-width="2"/>
+        <!-- Bacteria attracted to plastic -->
+        <g class="fa" style="transform-origin:80px 80px">
+          <ellipse cx="80" cy="80" rx="28" ry="14" fill="none" stroke="#2dd4bf" stroke-width="2.5"/>
+          <line x1="52" y1="77" x2="36" y2="68" stroke="#2dd4bf" stroke-width="2"/>
+          <circle cx="73" cy="77" r="4" fill="#2dd4bf" opacity=".5"/>
+        </g>
+        <g class="fb" style="transform-origin:320px 100px;animation-delay:-.5s">
+          <circle cx="320" cy="100" r="22" fill="none" stroke="#a78bfa" stroke-width="2.5"/>
+          <circle cx="313" cy="96" r="3.5" fill="#a78bfa" opacity=".4"/>
+          <line x1="342" y1="92" x2="356" y2="84" stroke="#a78bfa" stroke-width="2"/>
+        </g>
+        <g class="fa" style="transform-origin:88px 220px;animation-delay:-2s">
+          <ellipse cx="88" cy="220" rx="24" ry="12" fill="none" stroke="#4ade80" stroke-width="2"/>
+          <line x1="112" y1="217" x2="126" y2="210" stroke="#4ade80" stroke-width="1.8"/>
+          <circle cx="80" cy="218" r="3" fill="#4ade80" opacity=".4"/>
+        </g>
+        <g class="fb" style="transform-origin:335px 250px;animation-delay:-1.5s">
+          <path d="M305 250 Q322 238 340 250 Q358 262 375 250" fill="none" stroke="#f59e0b" stroke-width="2.5"/>
+          <line x1="375" y1="250" x2="388" y2="242" stroke="#f59e0b" stroke-width="2"/>
+        </g>
+        <!-- Arrows showing bacteria moving toward plastic -->
+        <line x1="108" y1="88" x2="125" y2="102" stroke="#2dd4bf" stroke-width="1.5" marker-end="url(#arr)" opacity=".6"/>
+        <line x1="298" y1="108" x2="278" y2="118" stroke="#a78bfa" stroke-width="1.5" opacity=".6"/>
+      </g>
+    </svg>
+  </div>
+  <div class="sc">
+    <div class="sbadge">Discussão</div>
+    <h2>O que a Síntese Metanalítica Revela</h2>
+    <div class="cols">
+      <div class="col">
+        <div class="card card-o" style="margin-bottom:.3rem"><p><strong>1. Biodegradáveis ≠ neutralidade</strong> — PLA libera ácido láctico → acidificação → seleciona acidotolerantes. Shannon PLA (7.32) &lt;&lt; PE (9.48)</p></div>
+        <div class="card card-t" style="margin-bottom:.3rem"><p><strong>2. Proteobacteria ubíqua</strong> — 9/9 estudos, mas proporção varia. Contexto edáfico modula a resposta ao plástico.</p></div>
+        <div class="card card-r" style="margin-bottom:.3rem"><p><strong>3. Patescibacteria = perturbação</strong> — parasitas dominantes indicam colapso parcial da comunidade (Ártico, solos com baixo % não-quimérico)</p></div>
+        <div class="card card-p"><p><strong>4. PET extremo</strong> — Shannon = 2.89. Alta resistência → seleção de especialistas ultrarresistentes.</p></div>
+      </div>
+      <div class="col40">
+        <h3 style="margin-bottom:.35rem">Limitações</h3>
+        <ul style="font-size:.72rem">
+          <li><strong>Heterogeneidade biológica:</strong> tempo de exposição e tipo de solo diferem</li>
+          <li><strong>Viés de publicação:</strong> estudos com efeito positivo têm maior probabilidade de publicação</li>
+          <li><strong>Amplicons:</strong> V3-V4 vs V4 detectam táxons distintos</li>
+          <li><strong>N desbalanceado:</strong> p07 (168 amostras) domina o pool</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ════════════════════════════════════════════════
+  S14 · CONCLUSÃO
+════════════════════════════════════════════════ -->
+<section data-background-color="#071510">
+  <div class="bg">
+    <svg width="100%" height="100%" viewBox="0 0 1100 700" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid slice">
+      <circle cx="550" cy="350" r="320" fill="none" stroke="#2dd4bf" stroke-width="1.5" opacity=".06"/>
+      <circle cx="550" cy="350" r="240" fill="none" stroke="#2dd4bf" stroke-width="1" opacity=".07"/>
+      <circle cx="550" cy="350" r="160" fill="none" stroke="#4ade80" stroke-width="1" opacity=".08"/>
+      <circle cx="550" cy="350" r="80" fill="#2dd4bf" opacity=".03"/>
+      <!-- small bacteria scattered -->
+      <g class="fa" style="transform-origin:150px 150px;opacity:.2">
+        <ellipse cx="150" cy="150" rx="22" ry="11" fill="none" stroke="#2dd4bf" stroke-width="2"/>
+        <line x1="172" y1="147" x2="184" y2="140" stroke="#2dd4bf" stroke-width="1.5"/>
+      </g>
+      <g class="fb" style="transform-origin:950px 200px;opacity:.2;animation-delay:-3s">
+        <circle cx="950" cy="200" r="18" fill="none" stroke="#a78bfa" stroke-width="2"/>
+      </g>
+      <g class="fa" style="transform-origin:120px 550px;opacity:.2;animation-delay:-1s">
+        <ellipse cx="120" cy="550" rx="18" ry="9" fill="none" stroke="#4ade80" stroke-width="2"/>
+      </g>
+      <g class="fb" style="transform-origin:980px 520px;opacity:.18;animation-delay:-4s">
+        <circle cx="980" cy="520" r="15" fill="none" stroke="#2dd4bf" stroke-width="2"/>
+      </g>
+    </svg>
+  </div>
+  <div class="sc">
+    <div class="sbadge">Conclusão</div>
+    <h2>Conclusão</h2>
+    <div class="hi" style="margin-bottom:.65rem">
+      <p><strong>Resposta PICO:</strong> Sim — diferentes polímeros associam-se a padrões distintos no microbioma do solo. Biodegradáveis (especialmente PLA) → menor diversidade que PE. Padrão consistente em 9 estudos, 6 países.</p>
+    </div>
+    <div class="cols">
+      <div class="col">
+        <h3 style="margin-bottom:.35rem">Contribuições</h3>
+        <div class="card card-g" style="margin-bottom:.25rem"><p>✓ Primeiro pipeline QIIME2 único aplicado a 9 estudos</p></div>
+        <div class="card card-g" style="margin-bottom:.25rem"><p>✓ Banco relacional: 554 amostras · 6 países · 11 plásticos</p></div>
+        <div class="card card-g" style="margin-bottom:.25rem"><p>✓ Padrões taxonômicos impossíveis de ver individualmente</p></div>
+        <div class="card card-g"><p>✓ Dashboard interativo de exploração dos dados</p></div>
+      </div>
+      <div class="col">
+        <h3 style="margin-bottom:.35rem">Próximos passos</h3>
+        <ul style="font-size:.74rem">
+          <li>Beta-diversidade (PERMANOVA por polímero)</li>
+          <li>Forest plot Shannon H' — PE vs PLA</li>
+          <li>Táxons marcadores por polímero (DESeq2)</li>
+          <li>Estatística I² de heterogeneidade</li>
+          <li>Expandir: fungos (ITS) + mais estudos</li>
+          <li>Submissão: Scientific Reports / Microbiome</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ════════════════════════════════════════════════
+  S15 · ARTIGO
+════════════════════════════════════════════════ -->
+<section data-background-color="#071510">
+  <div class="bg">
+    <svg width="100%" height="100%" viewBox="0 0 1100 700" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid slice">
+      <!-- Journal cover mockup (large, right) -->
+      <g opacity=".12" transform="translate(700,80)">
+        <rect x="0" y="0" width="330" height="440" rx="8" fill="none" stroke="#2dd4bf" stroke-width="3"/>
+        <rect x="0" y="0" width="330" height="100" rx="8" fill="#2dd4bf" opacity=".15"/>
+        <text x="165" y="38" text-anchor="middle" fill="#2dd4bf" font-size="18" font-weight="bold" opacity=".6">MICROBIOME</text>
+        <text x="165" y="60" text-anchor="middle" fill="#2dd4bf" font-size="11" opacity=".4">Scientific Reports</text>
+        <!-- content lines -->
+        <line x1="20" y1="120" x2="310" y2="120" stroke="#4ade80" stroke-width="2"/>
+        <rect x="20" y="135" width="200" height="8" rx="2" fill="#2dd4bf" opacity=".25"/>
+        <rect x="20" y="150" width="280" height="6" rx="2" fill="#2dd4bf" opacity=".15"/>
+        <rect x="20" y="162" width="260" height="6" rx="2" fill="#2dd4bf" opacity=".15"/>
+        <rect x="20" y="195" width="135" height="90" rx="4" fill="#2dd4bf" opacity=".12"/>
+        <rect x="165" y="195" width="145" height="90" rx="4" fill="#a78bfa" opacity=".1"/>
+        <rect x="20" y="300" width="290" height="6" rx="2" fill="#2dd4bf" opacity=".12"/>
+        <rect x="20" y="314" width="270" height="6" rx="2" fill="#2dd4bf" opacity=".12"/>
+        <rect x="20" y="328" width="250" height="6" rx="2" fill="#2dd4bf" opacity=".12"/>
+      </g>
+    </svg>
+  </div>
+  <div class="sc">
+    <div class="sbadge">Artigo Científico</div>
+    <h2>Estrutura do Artigo</h2>
+    <p style="font-size:.69rem;margin-bottom:.4rem"><strong>Título EN:</strong> <em>Soil Microbiome Associated with Microplastics: A Meta-Analytic Review of 16S rRNA Amplicon Sequencing Studies</em></p>
+    <div class="cols">
+      <div class="col60">
+        <table>
+          <thead><tr><th>Seção</th><th>Conteúdo principal</th></tr></thead>
+          <tbody>
+            <tr><td><strong>Abstract</strong></td><td>Background · Methods · Results · Conclusions</td></tr>
+            <tr><td><strong>Introduction</strong></td><td>Microplásticos · microbioma · lacuna · objetivos</td></tr>
+            <tr><td><strong>Methods</strong></td><td>PRISMA · pipeline · banco de dados · estatística</td></tr>
+            <tr><td><strong>Results</strong></td><td>Qualidade · diversidade alfa · taxonomia · efeito plástico</td></tr>
+            <tr><td><strong>Discussion</strong></td><td>Padrões · limitações · implicações</td></tr>
+            <tr><td><strong>Conclusion</strong></td><td>Resposta PICO · contribuição metodológica</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="col">
+        <p style="font-size:.7rem;margin-bottom:.28rem"><strong>Supplementary:</strong></p>
+        <ul style="font-size:.64rem">
+          <li>Table S1: Parâmetros DADA2</li>
+          <li>Table S2: Rarefação por projeto</li>
+          <li>Figure S1: Curvas de rarefação</li>
+          <li>Figure S2: PCoA plots</li>
+          <li>Figure S3: Forest plot PE vs PLA</li>
+          <li>Code S1+S2: Pipeline + ETL</li>
+        </ul>
+        <div style="display:flex;gap:.28rem;flex-wrap:wrap;margin-top:.5rem">
+          <span class="tag-g">Scientific Reports</span>
+          <span class="tag-g">Microbiome</span>
+          <span class="tag-g">FEMS Microbiol.</span>
+        </div>
+      </div>
+    </div>
+    <p style="font-size:.61rem;color:var(--muted);margin-top:.35rem"><strong>Palavras-chave:</strong> microplásticos · microbioma do solo · 16S rRNA · metanálise · diversidade bacteriana · QIIME2</p>
+  </div>
+</section>
+
+<!-- ════════════════════════════════════════════════
+  S16 · REFERÊNCIAS
+════════════════════════════════════════════════ -->
+<section data-background-color="#071510">
+  <div class="sc">
+    <div class="sbadge">Referências</div>
+    <h2>Referências Principais</h2>
+    <div class="cols">
+      <div class="col">
+        <div class="card card-t" style="margin-bottom:.3rem"><p style="font-size:.65rem"><strong>Pipeline:</strong> Bolyen et al. (2019) QIIME2 · Callahan et al. (2016) DADA2 · Quast et al. (2013) SILVA 138</p></div>
+        <div class="card card-o" style="margin-bottom:.3rem"><p style="font-size:.65rem"><strong>Microplásticos:</strong> de Souza Machado et al. (2018) · Rillig et al. (2019) · Zettler et al. (2013) Plastisfera</p></div>
+        <div class="card card-p" style="margin-bottom:.3rem"><p style="font-size:.65rem"><strong>Metanálise:</strong> Pasolli et al. (2019) Cell · Duvallet et al. (2017) Nat. Comm. · Higgins &amp; Thompson (2002) I²</p></div>
+        <div class="card card-g"><p style="font-size:.65rem"><strong>Diversidade:</strong> Jost (2006) Oikos · Faith (1992) Biol. Conservation</p></div>
+      </div>
+      <div class="col40">
+        <div class="card card-t" style="margin-top:.2rem">
+          <p style="font-size:.68rem"><strong>Dados e código disponíveis:</strong><br>NCBI SRA · GitHub (pipeline QIIME2 + ETL PostgreSQL)</p>
+        </div>
+        <div class="kpis" style="flex-direction:column;gap:.3rem;margin-top:.5rem">
+          <div class="kpi" style="border-color:var(--teal)"><div class="v glow-t" style="color:var(--teal);font-size:1.3rem">9</div><div class="l">Estudos sintetizados</div></div>
+          <div class="kpi" style="border-color:var(--green)"><div class="v glow-g" style="color:var(--green);font-size:1.3rem">554</div><div class="l">Amostras analisadas</div></div>
+          <div class="kpi" style="border-color:var(--orange)"><div class="v glow-o" style="color:var(--orange);font-size:1.3rem">45–65</div><div class="l">Referências no artigo</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ════════════════════════════════════════════════
+  S17 · OBRIGADO
+════════════════════════════════════════════════ -->
+<section data-background-color="#071510">
+  <div class="bg">
+    <svg width="100%" height="100%" viewBox="0 0 1100 700" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid slice">
+      <!-- FULL SCENE -->
+      <!-- Soil layers -->
+      <rect x="0" y="540" width="1100" height="42" fill="#92400e" opacity=".35"/>
+      <rect x="0" y="585" width="1100" height="55" fill="#78350f" opacity=".4"/>
+      <rect x="0" y="643" width="1100" height="57" fill="#5c2d0e" opacity=".45"/>
+      <!-- Roots -->
+      <path d="M160 540 Q145 590 128 650 Q118 678 115 700" stroke="#4ade80" stroke-width="2.5" fill="none" opacity=".4"/>
+      <path d="M430 540 Q420 592 410 655" stroke="#4ade80" stroke-width="2" fill="none" opacity=".35"/>
+      <path d="M700 540 Q710 590 722 650" stroke="#4ade80" stroke-width="2" fill="none" opacity=".35"/>
+      <path d="M960 540 Q955 590 942 655 Q936 678 932 700" stroke="#4ade80" stroke-width="2.5" fill="none" opacity=".4"/>
+      <!-- Plastic fragments -->
+      <polygon points="55,558 78,550 90,568 81,586 55,588 42,571" fill="none" stroke="#f97316" stroke-width="2.5" opacity=".5"/>
+      <polygon points="270,562 294,554 306,572 297,590 270,592 257,574" fill="none" stroke="#ef4444" stroke-width="2" opacity=".48"/>
+      <polygon points="520,555 543,547 556,566 547,584 520,586 507,568" fill="none" stroke="#f97316" stroke-width="2.5" opacity=".5"/>
+      <polygon points="800,558 824,550 836,569 827,587 800,589 787,571" fill="none" stroke="#fbbf24" stroke-width="2" opacity=".48"/>
+      <polygon points="1020,555 1045,547 1058,566 1049,584 1022,586 1009,568" fill="none" stroke="#ef4444" stroke-width="2.5" opacity=".5"/>
+      <!-- Bacteria (many, floating) -->
+      <g class="fa" style="transform-origin:120px 120px;opacity:.35">
+        <ellipse cx="120" cy="120" rx="35" ry="17" fill="none" stroke="#2dd4bf" stroke-width="2.5"/>
+        <line x1="155" y1="115" x2="172" y2="106" stroke="#2dd4bf" stroke-width="2"/>
+        <line x1="155" y1="125" x2="174" y2="133" stroke="#2dd4bf" stroke-width="2"/>
+        <circle cx="110" cy="117" r="4.5" fill="#2dd4bf" opacity=".5"/>
+        <circle cx="126" cy="123" r="3.5" fill="#2dd4bf" opacity=".5"/>
+      </g>
+      <g class="fb" style="transform-origin:350px 90px;opacity:.3;animation-delay:-2s">
+        <circle cx="350" cy="90" r="28" fill="none" stroke="#a78bfa" stroke-width="2.5"/>
+        <circle cx="342" cy="84" r="4.5" fill="#a78bfa" opacity=".5"/>
+        <circle cx="356" cy="96" r="3.5" fill="#a78bfa" opacity=".4"/>
+        <line x1="350" y1="62" x2="350" y2="46" stroke="#a78bfa" stroke-width="2"/>
+        <line x1="372" y1="76" x2="388" y2="67" stroke="#a78bfa" stroke-width="2"/>
+      </g>
+      <g class="fa" style="transform-origin:620px 160px;opacity:.3;animation-delay:-3.5s">
+        <path d="M585 160 Q603 146 622 160 Q641 174 660 160 Q679 146 696 160" fill="none" stroke="#f59e0b" stroke-width="2.5"/>
+        <line x1="696" y1="160" x2="710" y2="151" stroke="#f59e0b" stroke-width="2"/>
+      </g>
+      <g class="fb" style="transform-origin:880px 130px;opacity:.3;animation-delay:-1s">
+        <ellipse cx="880" cy="130" rx="30" ry="15" fill="none" stroke="#4ade80" stroke-width="2.5"/>
+        <line x1="910" y1="125" x2="927" y2="116" stroke="#4ade80" stroke-width="2"/>
+        <circle cx="869" cy="127" r="4" fill="#4ade80" opacity=".45"/>
+      </g>
+      <g class="fa" style="transform-origin:200px 340px;opacity:.28;animation-delay:-2.5s">
+        <circle cx="200" cy="340" r="20" fill="none" stroke="#2dd4bf" stroke-width="2"/>
+        <circle cx="194" cy="336" r="3.5" fill="#2dd4bf" opacity=".4"/>
+        <line x1="200" y1="320" x2="200" y2="305" stroke="#2dd4bf" stroke-width="1.8"/>
+      </g>
+      <!-- DNA strand (middle of slide) -->
+      <g opacity=".2">
+        <path d="M420 400 Q445 385 470 400 Q495 415 520 400 Q545 385 570 400 Q595 415 620 400 Q645 385 670 400" fill="none" stroke="#4ade80" stroke-width="2.5"/>
+        <path d="M420 425 Q445 410 470 425 Q495 440 520 425 Q545 410 570 425 Q595 440 620 425 Q645 410 670 425" fill="none" stroke="#4ade80" stroke-width="2.5"/>
+        <line x1="470" y1="400" x2="470" y2="425" stroke="#4ade80" stroke-width="2"/>
+        <line x1="520" y1="400" x2="520" y2="425" stroke="#4ade80" stroke-width="2"/>
+        <line x1="570" y1="400" x2="570" y2="425" stroke="#4ade80" stroke-width="2"/>
+        <line x1="620" y1="400" x2="620" y2="425" stroke="#4ade80" stroke-width="2"/>
+      </g>
+      <!-- Petri dish -->
+      <g opacity=".25" transform="translate(430,195)">
+        <ellipse cx="120" cy="60" rx="115" ry="55" fill="none" stroke="#2dd4bf" stroke-width="3"/>
+        <ellipse cx="120" cy="60" rx="110" ry="50" fill="#2dd4bf" opacity=".04"/>
+        <circle cx="80" cy="52" r="10" fill="none" stroke="#4ade80" stroke-width="2"/>
+        <circle cx="110" cy="68" r="7" fill="none" stroke="#a78bfa" stroke-width="2"/>
+        <ellipse cx="145" cy="54" rx="14" ry="7" fill="none" stroke="#2dd4bf" stroke-width="2"/>
+        <circle cx="165" cy="68" r="9" fill="none" stroke="#4ade80" stroke-width="2"/>
+        <circle cx="95" cy="40" r="6" fill="none" stroke="#2dd4bf" stroke-width="2"/>
+      </g>
+    </svg>
+  </div>
+
+  <div class="sc" style="text-align:center;align-items:center">
+    <h1 style="font-size:2.8rem;margin-bottom:.6rem">Obrigado</h1>
+    <p style="font-size:.88rem;color:var(--muted);margin-bottom:1rem">
+      Microbioma Associado a Microplásticos do Solo: Uma Revisão Metanalítica
+    </p>
+    <div style="display:flex;justify-content:center;gap:.4rem;flex-wrap:wrap;margin-bottom:.8rem">
+      <span class="tag">9 estudos · 554 amostras</span>
+      <span class="tag">6 países · 11 plásticos</span>
+      <span class="tag-g">Pipeline reprodutível</span>
+      <span class="tag-p">Banco PostgreSQL</span>
+    </div>
+    <div class="kpis" style="justify-content:center;max-width:550px;margin:0 auto .8rem">
+      <div class="kpi" style="border-color:var(--teal);text-align:center"><div class="v glow-t" style="color:var(--teal)">9</div><div class="l">Estudos</div></div>
+      <div class="kpi" style="border-color:var(--green);text-align:center"><div class="v glow-g" style="color:var(--green)">554</div><div class="l">Amostras</div></div>
+      <div class="kpi" style="border-color:var(--purple);text-align:center"><div class="v glow-p" style="color:var(--purple)">190K</div><div class="l">ASVs</div></div>
+      <div class="kpi" style="border-color:var(--orange);text-align:center"><div class="v glow-o" style="color:var(--orange)">11</div><div class="l">Plásticos</div></div>
+    </div>
+    <hr style="border-color:#2dd4bf15;max-width:450px;margin:.5rem auto">
+    <p style="font-size:.62rem;color:#1a3a28">QIIME2 2026.4 · DADA2 · SILVA 138 · Python · PostgreSQL · Plotly.js</p>
+  </div>
+</section>
+
+</div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/reveal.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/plugin/notes/notes.js"></script>
+<script>
+Reveal.initialize({
+  hash: true,
+  slideNumber: 'c/t',
+  progress: true,
+  controls: true,
+  center: true,          // ← VERTICAL CENTERING
+  transition: 'slide',
+  transitionSpeed: 'fast',
+  backgroundTransition: 'fade',
+  width: 1100,
+  height: 700,
+  margin: 0.04,
+  minScale: 0.2,
+  maxScale: 2.0,
+  plugins: [RevealNotes]
+});
+</script>
+</body>
+</html>

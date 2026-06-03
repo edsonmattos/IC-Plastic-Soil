@@ -1,0 +1,710 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>MPB Dashboard Pro</title>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+<script src="https://cdn.plot.ly/plotly-2.27.0.min.js"></script>
+<style>
+:root{--bg:#0f172a;--card:#1e293b;--c2:#162032;--bd:#334155;--tx:#e2e8f0;--mu:#94a3b8;--ac:#38bdf8}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--tx);font-family:'Segoe UI',system-ui,sans-serif;margin:0;font-size:.87rem}
+.hdr{background:linear-gradient(135deg,#0f172a,#1a3a5c);border-bottom:1px solid var(--bd);padding:.6rem 1rem;display:flex;align-items:center;gap:.75rem}
+/* FILTER BAR */
+.fbar{background:#121e30;border-bottom:1px solid var(--bd);padding:.35rem .8rem;position:sticky;top:0;z-index:200;display:flex;align-items:center;gap:.4rem;flex-wrap:wrap}
+.fbar select,.fbar input{background:var(--card);color:var(--tx);border:1px solid var(--bd);border-radius:5px;padding:.22rem .45rem;font-size:.77rem}
+.fbar select:focus,.fbar input:focus{outline:none;border-color:var(--ac)}
+.chip{background:#38bdf820;color:var(--ac);border:1px solid #38bdf840;border-radius:20px;padding:.1rem .45rem;font-size:.72rem;cursor:pointer;display:inline-flex;align-items:center;gap:.2rem}
+.chip:hover{background:#38bdf835}
+/* KPI ROW */
+.krow{display:flex;gap:.4rem;padding:.45rem .75rem;flex-wrap:wrap}
+.kpi{background:var(--card);border:1px solid var(--bd);border-radius:8px;padding:.5rem .75rem;border-left:3px solid;flex:1;min-width:105px}
+.kpi .v{font-size:1.65rem;font-weight:700;line-height:1}
+.kpi .l{font-size:.64rem;color:var(--mu);text-transform:uppercase;letter-spacing:.05em}
+/* CHARTS */
+.cc{background:var(--card);border:1px solid var(--bd);border-radius:10px;overflow:hidden}
+.ct{font-size:.67rem;color:var(--mu);text-transform:uppercase;letter-spacing:.06em;padding:.4rem .7rem .05rem}
+/* TABS */
+.nav-tabs{border-bottom:1px solid var(--bd);padding:0 .75rem}
+.nav-tabs .nav-link{color:var(--mu);border:none;border-bottom:2px solid transparent;padding:.48rem .85rem;font-size:.81rem}
+.nav-tabs .nav-link.active{color:var(--ac);background:transparent;border-bottom-color:var(--ac)}
+.nav-tabs .nav-link:hover:not(.active){color:var(--tx)}
+.tab-content{padding:.45rem .75rem .75rem}
+/* DATATABLE */
+.dt-bar{display:flex;align-items:center;gap:.5rem;padding:.4rem .7rem;border-bottom:1px solid var(--bd);flex-wrap:wrap}
+.dt-q{background:var(--c2)!important;color:var(--tx)!important;border:1px solid var(--bd)!important;border-radius:5px;padding:.2rem .5rem;font-size:.76rem;width:200px}
+.dt-q:focus{outline:none;border-color:var(--ac)!important}
+.dt-info{font-size:.72rem;color:var(--mu);margin-left:auto}
+.dt-pg{display:flex;gap:.2rem}
+.dt-pg button{background:var(--c2);color:var(--tx);border:1px solid var(--bd);border-radius:4px;padding:.15rem .45rem;cursor:pointer;font-size:.78rem}
+.dt-pg button:hover:not([disabled]){border-color:var(--ac);color:var(--ac)}
+.dt-pg button[disabled]{opacity:.35;cursor:default}
+.dt-scroll{overflow-x:auto;max-height:280px}
+.dt-tbl{width:100%;border-collapse:collapse;font-size:.78rem}
+.dt-tbl th{background:#0f172a;color:var(--mu);padding:.35rem .6rem;text-align:left;cursor:pointer;position:sticky;top:0;white-space:nowrap;border-bottom:1px solid var(--bd);user-select:none}
+.dt-tbl th:hover,.dt-tbl th.dt-s{color:var(--ac)}
+.dt-tbl td{padding:.3rem .6rem;border-bottom:1px solid #1e293b;white-space:nowrap}
+.dt-tbl tr.dt-a td{background:#162032}
+.dt-tbl tr:hover td{background:#1e3a5f20}
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div class="hdr">
+  <i class="bi bi-virus2 fs-3 text-info"></i>
+  <div>
+    <div class="fw-bold">MPB Microbiome Dashboard <span class="badge bg-primary" style="font-size:.58rem;vertical-align:2px">PRO</span></div>
+    <small class="text-muted">16S rRNA · QIIME2 2026.4 · PostgreSQL · Cross-filter ativo</small>
+  </div>
+  <div class="ms-auto d-flex gap-2 align-items-center">
+    <button id="btnReset" class="btn btn-sm btn-outline-danger" style="font-size:.71rem"><i class="bi bi-x-circle me-1"></i>Reset</button>
+    <span class="badge bg-success"><i class="bi bi-circle-fill me-1" style="font-size:.4rem"></i>Live</span>
+  </div>
+</div>
+
+<!-- FILTER BAR -->
+<div class="fbar">
+  <i class="bi bi-funnel text-muted" style="font-size:.9rem"></i>
+  <select id="fProjeto"><option value="">Todos os Projetos</option></select>
+  <select id="fPais"><option value="">Todos os Países</option></select>
+  <select id="fPlastico"><option value="">Todos os Plásticos</option></select>
+  <div id="fChips" style="display:flex;gap:.25rem;flex-wrap:wrap"></div>
+</div>
+
+<!-- KPI ROW -->
+<div class="krow">
+  <div class="kpi" style="border-color:#38bdf8"><div class="l"><i class="bi bi-folder2-open me-1"></i>Projetos</div><div class="v text-info" id="kP">9</div></div>
+  <div class="kpi" style="border-color:#22c55e"><div class="l"><i class="bi bi-collection me-1"></i>Amostras</div><div class="v text-success" id="kA">554</div></div>
+  <div class="kpi" style="border-color:#f97316"><div class="l"><i class="bi bi-diagram-3 me-1"></i>Features</div><div class="v" style="color:#f97316" id="kF">189.8K</div></div>
+  <div class="kpi" style="border-color:#a78bfa"><div class="l"><i class="bi bi-globe me-1"></i>Países</div><div class="v" style="color:#a78bfa" id="kC">6</div></div>
+  <div class="kpi" style="border-color:#fb7185"><div class="l"><i class="bi bi-shield-check me-1"></i>% Não-Quimérico</div><div class="v" style="color:#fb7185" id="kQ">—</div></div>
+  <div class="kpi" style="border-color:#34d399"><div class="l"><i class="bi bi-recycle me-1"></i>Tipos de Plástico</div><div class="v" style="color:#34d399" id="kPl">—</div></div>
+</div>
+
+<!-- TABS -->
+<ul class="nav nav-tabs" id="tabs">
+  <li class="nav-item"><button class="nav-link active" data-bs-toggle="tab" data-bs-target="#tPainel"><i class="bi bi-grid me-1"></i>Painel</button></li>
+  <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#tTaxa"><i class="bi bi-diagram-3 me-1"></i>Taxonomia</button></li>
+  <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#tDiv"><i class="bi bi-activity me-1"></i>Diversidade</button></li>
+  <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#tQual"><i class="bi bi-bar-chart-steps me-1"></i>Qualidade</button></li>
+  <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#tPlas"><i class="bi bi-recycle me-1"></i>Plásticos</button></li>
+  <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#tMapa"><i class="bi bi-map me-1"></i>Mapa</button></li>
+</ul>
+
+<div class="tab-content">
+
+  <!-- TAB PAINEL -->
+  <div class="tab-pane fade show active" id="tPainel">
+    <div class="row g-2">
+      <div class="col-md-5"><div class="cc"><div class="ct">Amostras por Projeto <small>(clique → filtra tudo)</small></div><div id="gSamples" style="height:250px"></div></div></div>
+      <div class="col-md-3"><div class="cc"><div class="ct">Distribuição por País</div><div id="gCountryPie" style="height:250px"></div></div></div>
+      <div class="col-md-4"><div class="cc"><div class="ct">Gauge — % Não-Quimérico médio</div><div id="gGauge" style="height:250px"></div></div></div>
+    </div>
+    <div class="row g-2 mt-1">
+      <div class="col-md-6"><div class="cc"><div class="ct">Treemap — Features por Projeto</div><div id="gTreemap" style="height:265px"></div></div></div>
+      <div class="col-md-6"><div class="cc"><div class="ct">Reads por Projeto</div><div id="gReads" style="height:265px"></div></div></div>
+    </div>
+    <div class="cc mt-2"><div class="ct">Tabela — Projetos</div><div id="dt-painel"></div></div>
+  </div>
+
+  <!-- TAB TAXONOMIA -->
+  <div class="tab-pane fade" id="tTaxa">
+    <div class="row g-2">
+      <div class="col-md-5">
+        <div class="cc"><div class="ct">Hierarquia — Domínio → Filo → Classe (clique para aprofundar)</div><div id="gIcicle" style="height:440px"></div></div>
+      </div>
+      <div class="col-md-7">
+        <div class="row g-2">
+          <div class="col-12"><div class="cc"><div class="ct">Pareto — Filos por Reads (linha: % acumulado)</div><div id="gPareto" style="height:210px"></div></div></div>
+          <div class="col-12"><div class="cc"><div class="ct">Heatmap — Composição Filo × Projeto (% reads)</div><div id="gPhylaHeat" style="height:210px"></div></div></div>
+        </div>
+      </div>
+    </div>
+    <div class="row g-2 mt-1">
+      <div class="col-md-6"><div class="cc"><div class="ct">Sunburst — Drill-down interativo</div><div id="gSunburst" style="height:300px"></div></div></div>
+      <div class="col-md-6"><div class="cc"><div class="ct">Treemap — Filos Globais</div><div id="gTaxaTreemap" style="height:300px"></div></div></div>
+    </div>
+    <div class="row g-2 mt-1">
+      <div class="col-12"><div class="cc"><div class="ct">Hierarquia Taxonômica — Drill-down Domínio → Filo → Classe <small>(clique para aprofundar · clique no pathbar para voltar)</small></div><div id="gTaxaHier" style="height:420px"></div></div></div>
+    </div>
+    <div class="cc mt-2"><div class="ct">Tabela — Taxonomia (Filo × Projeto)</div><div id="dt-taxa"></div></div>
+  </div>
+
+  <!-- TAB DIVERSIDADE -->
+  <div class="tab-pane fade" id="tDiv">
+    <div class="row g-2">
+      <div class="col-md-6"><div class="cc"><div class="ct">Scatter — Shannon × Faith PD (projeto-01)</div><div id="gScatter" style="height:280px"></div></div></div>
+      <div class="col-md-6"><div class="cc"><div class="ct">Bubble — Shannon × Observed Features × N Amostras</div><div id="gBubble" style="height:280px"></div></div></div>
+    </div>
+    <div class="row g-2 mt-1">
+      <div class="col-md-4"><div class="cc"><div class="ct">Dot Plot — Shannon por Plástico <small>(clique → filtra)</small></div><div id="gDot" style="height:310px"></div></div></div>
+      <div class="col-md-4"><div class="cc"><div class="ct">Área — Perfil de Diversidade</div><div id="gArea" style="height:310px"></div></div></div>
+      <div class="col-md-4"><div class="cc"><div class="ct">Box — Shannon por País</div><div id="gBox" style="height:310px"></div></div></div>
+    </div>
+    <div class="cc mt-2"><div class="ct">Tabela — Diversidade por Projeto</div><div id="dt-div"></div></div>
+  </div>
+
+  <!-- TAB QUALIDADE -->
+  <div class="tab-pane fade" id="tQual">
+    <div class="row g-2">
+      <div class="col-md-4"><div class="cc"><div class="ct">Funnel — Retenção de Reads no Pipeline</div><div id="gFunnel" style="height:290px"></div></div></div>
+      <div class="col-md-8"><div class="cc"><div class="ct">Heatmap — Métricas DADA2 por Projeto</div><div id="gQualHeat" style="height:290px"></div></div></div>
+    </div>
+    <div class="row g-2 mt-1">
+      <div class="col-md-6"><div class="cc"><div class="ct">Waterfall — Reads por Projeto</div><div id="gWaterfall" style="height:270px"></div></div></div>
+      <div class="col-md-6"><div class="cc"><div class="ct">Gauges — % Não-Quimérico por Projeto</div><div id="gGauges" style="height:270px"></div></div></div>
+    </div>
+    <div class="cc mt-2"><div class="ct">Tabela — Estatísticas DADA2</div><div id="dt-qual"></div></div>
+  </div>
+
+  <!-- TAB PLÁSTICOS -->
+  <div class="tab-pane fade" id="tPlas">
+    <div class="row g-2">
+      <div class="col-md-7"><div class="cc"><div class="ct">Heatmap — Shannon médio (Plástico × Projeto) <small>(clique → filtra)</small></div><div id="gPolyHeat" style="height:370px"></div></div></div>
+      <div class="col-md-5"><div class="cc"><div class="ct">Bubble — Plástico × Shannon × N Amostras</div><div id="gPolyBubble" style="height:370px"></div></div></div>
+    </div>
+    <div class="row g-2 mt-1">
+      <div class="col-md-4"><div class="cc"><div class="ct">Funnel — Amostras por Plástico <small>(clique → filtra)</small></div><div id="gPolyFunnel" style="height:270px"></div></div></div>
+      <div class="col-md-8"><div class="cc"><div class="ct">Scatter — Shannon × Observed por Plástico</div><div id="gPolyScatter" style="height:270px"></div></div></div>
+    </div>
+    <div class="cc mt-2"><div class="ct">Tabela — Diversidade por Plástico</div><div id="dt-plas"></div></div>
+  </div>
+
+  <!-- TAB MAPA -->
+  <div class="tab-pane fade" id="tMapa">
+    <div class="row g-2">
+      <div class="col-12"><div class="cc"><div class="ct">Mapa Mundial — Amostras por País <small>(clique → filtra)</small></div><div id="gMap" style="height:360px"></div></div></div>
+    </div>
+    <div class="row g-2 mt-1">
+      <div class="col-md-5"><div class="cc"><div class="ct">Barras — Amostras + SOC por País</div><div id="gCountryStats" style="height:240px"></div></div></div>
+      <div class="col-md-7"><div class="cc"><div class="ct">Agrupadas — Projetos por País</div><div id="gCountryProj" style="height:240px"></div></div></div>
+    </div>
+    <div class="cc mt-2"><div class="ct">Tabela — Países</div><div id="dt-mapa"></div></div>
+  </div>
+
+</div><!-- end tab-content -->
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+// ================================================================
+// DATA
+// ================================================================
+const PROJS = [
+  {n:"projeto-01",         amp:"V3-V4",mode:"paired",depth:6000,  s:31, f:1423,  country:"Germany"},
+  {n:"projeto-03",         amp:"V3-V4",mode:"paired",depth:48000, s:61, f:51405, country:"Italy"},
+  {n:"projeto-04",         amp:"V3-V4",mode:"single",depth:47000, s:111,f:79083, country:"China"},
+  {n:"projeto-05",         amp:"V4",   mode:"paired",depth:70000, s:12, f:7054,  country:"USA"},
+  {n:"projeto-06-barba",   amp:"V3-V4",mode:"paired",depth:35000, s:18, f:4413,  country:"Switzerland"},
+  {n:"projeto-06-villum",  amp:"V3-V4",mode:"single",depth:10000, s:17, f:2364,  country:"Greenland"},
+  {n:"projeto-07",         amp:"V4",   mode:"paired",depth:33000, s:168,f:32882, country:"USA"},
+  {n:"projeto-08",         amp:"V4",   mode:"paired",depth:40000, s:88, f:11278, country:"USA"},
+  {n:"projeto-09-bacteria",amp:"V4",   mode:"paired",depth:20000, s:48, f:981,   country:"China"},
+];
+const CTRIES = [
+  {c:"USA",        n:268,iso:"USA",ph:5.50, soc:24.0},
+  {c:"China",      n:159,iso:"CHN",ph:7.79, soc:274.7},
+  {c:"Italy",      n:61, iso:"ITA",ph:null, soc:null},
+  {c:"Germany",    n:31, iso:"DEU",ph:null, soc:20.0},
+  {c:"Switzerland",n:18, iso:"CHE",ph:null, soc:119.0},
+  {c:"Greenland",  n:17, iso:"GRL",ph:null, soc:21.1},
+];
+const DEN = [
+  {p:"projeto-01",         fi:94.7, me:57.5, nc:17.1, inp:4261177},
+  {p:"projeto-03",         fi:90.6, me:25.4, nc:78.6, inp:7359762},
+  {p:"projeto-04",         fi:100.0,me:null, nc:93.0, inp:8327364},
+  {p:"projeto-05",         fi:91.9, me:75.3, nc:72.5, inp:1701323},
+  {p:"projeto-06-barba",   fi:64.1, me:52.1, nc:49.6, inp:2483550},
+  {p:"projeto-06-villum",  fi:82.4, me:null, nc:76.6, inp:914525},
+  {p:"projeto-07",         fi:88.6, me:72.5, nc:71.4, inp:14598740},
+  {p:"projeto-08",         fi:84.1, me:81.4, nc:79.6, inp:17150036},
+  {p:"projeto-09-bacteria",fi:91.5, me:61.7, nc:60.2, inp:4968348},
+];
+const TOP10 = ["Proteobacteria","Actinobacteriota","Acidobacteriota","Firmicutes","Chloroflexi","Bacteroidota","Patescibacteria","Planctomycetota","Verrucomicrobiota","Gemmatimonadota"];
+const PHYLA_RAW = {
+  "projeto-01":[["Proteobacteria",149872],["Actinobacteriota",34853],["Bacteroidota",21498],["Acidobacteriota",19718],["Firmicutes",16735],["Crenarchaeota",15559],["Chloroflexi",14956],["Myxococcota",7564],["Gemmatimonadota",6457],["Planctomycetota",6024],["Methylomirabilota",3778]],
+  "projeto-03":[["Proteobacteria",1017014],["Actinobacteriota",787625],["Acidobacteriota",501424],["Chloroflexi",305184],["Bacteroidota",250468],["Gemmatimonadota",213072],["Planctomycetota",190847],["Verrucomicrobiota",150478],["Myxococcota",120911],["Firmicutes",69860],["Patescibacteria",58390]],
+  "projeto-04":[["Proteobacteria",2129342],["Firmicutes",1822759],["Bacteroidota",1119182],["Acidobacteriota",617614],["Actinobacteriota",487141],["Gemmatimonadota",207484],["Chloroflexi",191540],["Verrucomicrobiota",128872],["Planctomycetota",112992],["Patescibacteria",104731],["Myxococcota",101212]],
+  "projeto-05":[["Proteobacteria",274161],["Acidobacteriota",211549],["Firmicutes",131942],["Planctomycetota",102313],["Verrucomicrobiota",99964],["Bacteroidota",89050],["Actinobacteriota",74703],["Chloroflexi",52550],["Patescibacteria",42779],["Gemmatimonadota",35256],["Crenarchaeota",31105]],
+  "projeto-06-barba":[["Patescibacteria",210782],["Proteobacteria",193961],["Chloroflexi",161421],["Verrucomicrobiota",148565],["Bacteroidota",140310],["Planctomycetota",137231],["Acidobacteriota",129151],["Gemmatimonadota",33147],["Actinobacteriota",25536],["WPS-2",17648],["Myxococcota",6543]],
+  "projeto-06-villum":[["Acidobacteriota",157412],["Proteobacteria",124561],["Planctomycetota",82170],["Patescibacteria",74199],["Verrucomicrobiota",71355],["Actinobacteriota",62463],["Chloroflexi",45374],["Gemmatimonadota",32421],["Bacteroidota",20766],["Myxococcota",6010],["Nitrospirota",4397]],
+  "projeto-07":[["Acidobacteriota",2199366],["Chloroflexi",2060013],["Proteobacteria",1391763],["Planctomycetota",1178002],["Actinobacteriota",1160616],["Verrucomicrobiota",414990],["Methylomirabilota",267142],["Patescibacteria",251229],["Firmicutes",244169],["Armatimonadota",233154],["Gemmatimonadota",210688]],
+  "projeto-08":[["Actinobacteriota",4659653],["Proteobacteria",4623373],["Patescibacteria",1179337],["Bacteroidota",1153806],["Firmicutes",1017466],["Deinococcota",504125],["Chloroflexi",333660],["Planctomycetota",61222],["Acidobacteriota",33638],["Armatimonadota",19881],["Verrucomicrobiota",19555]],
+  "projeto-09-bacteria":[["Proteobacteria",14]],
+};
+const TAXA_HIER = [
+  {dom:"Bacteria",phy:"Actinobacteriota",cls:"Actinobacteria",r:6157478},
+  {dom:"Bacteria",phy:"Proteobacteria",cls:"Gammaproteobacteria",r:5028096},
+  {dom:"Bacteria",phy:"Proteobacteria",cls:"Alphaproteobacteria",r:4873293},
+  {dom:"Bacteria",phy:"Bacteroidota",cls:"Bacteroidia",r:2907522},
+  {dom:"Bacteria",phy:"Firmicutes",cls:"Bacilli",r:2239917},
+  {dom:"Bacteria",phy:"Patescibacteria",cls:"Saccharimonadia",r:1662455},
+  {dom:"Bacteria",phy:"Acidobacteriota",cls:"Vicinamibacteria",r:1256364},
+  {dom:"Bacteria",phy:"Acidobacteriota",cls:"Blastocatellia",r:1219938},
+  {dom:"Bacteria",phy:"Planctomycetota",cls:"Planctomycetes",r:1155898},
+  {dom:"Bacteria",phy:"Verrucomicrobiota",cls:"Verrucomicrobiae",r:1004372},
+  {dom:"Bacteria",phy:"Chloroflexi",cls:"Chloroflexia",r:1003850},
+  {dom:"Bacteria",phy:"Firmicutes",cls:"Clostridia",r:857139},
+  {dom:"Bacteria",phy:"Acidobacteriota",cls:"Acidobacteriae",r:750555},
+  {dom:"Bacteria",phy:"Actinobacteriota",cls:"Thermoleophilia",r:699841},
+  {dom:"Bacteria",phy:"Gemmatimonadota",cls:"Gemmatimonadetes",r:636293},
+  {dom:"Bacteria",phy:"Planctomycetota",cls:"Phycisphaerae",r:623325},
+  {dom:"Bacteria",phy:"Chloroflexi",cls:"Anaerolineae",r:544150},
+  {dom:"Bacteria",phy:"Deinococcota",cls:"Deinococci",r:536418},
+  {dom:"Bacteria",phy:"Acidobacteriota",cls:"Holophagae",r:505526},
+  {dom:"Bacteria",phy:"Chloroflexi",cls:"KD4-96",r:462962},
+  {dom:"Bacteria",phy:"Chloroflexi",cls:"Ktedonobacteria",r:413369},
+  {dom:"Bacteria",phy:"Methylomirabilota",cls:"Methylomirabilia",r:320398},
+  {dom:"Bacteria",phy:"Actinobacteriota",cls:"Acidimicrobiia",r:319607},
+  {dom:"Bacteria",phy:"Chloroflexi",cls:"TK10",r:245373},
+  {dom:"Bacteria",phy:"Myxococcota",cls:"Polyangia",r:244529},
+  {dom:"Bacteria",phy:"Patescibacteria",cls:"Parcubacteria",r:179230},
+  {dom:"Bacteria",phy:"Armatimonadota",cls:"uncultured",r:152076},
+  {dom:"Bacteria",phy:"Firmicutes",cls:"Negativicutes",r:147759},
+  {dom:"Bacteria",phy:"Latescibacterota",cls:"Latescibacterota",r:145102},
+  {dom:"Archaea",phy:"Crenarchaeota",cls:"Nitrososphaeria",r:137715},
+  {dom:"Bacteria",phy:"WPS-2",cls:"WPS-2",r:106341},
+  {dom:"Bacteria",phy:"Chloroflexi",cls:"JG30-KF-CM66",r:103776},
+  {dom:"Bacteria",phy:"Chloroflexi",cls:"Dehalococcoidia",r:94196},
+  {dom:"Bacteria",phy:"Nitrospirota",cls:"Nitrospiria",r:89183},
+  {dom:"Bacteria",phy:"Armatimonadota",cls:"Chthonomonadetes",r:83644},
+  {dom:"Bacteria",phy:"Myxococcota",cls:"Myxococcia",r:79449},
+  {dom:"Bacteria",phy:"Chloroflexi",cls:"Gitt-GS-136",r:79092},
+  {dom:"Bacteria",phy:"Chloroflexi",cls:"OLB14",r:76872},
+  {dom:"Bacteria",phy:"Actinobacteriota",cls:"MB-A2-108",r:76708},
+  {dom:"Archaea",phy:"Thermoplasmatota",cls:"Thermoplasmata",r:68254},
+  {dom:"Bacteria",phy:"Fusobacteriota",cls:"Fusobacteriia",r:63788},
+  {dom:"Bacteria",phy:"Chloroflexi",cls:"AD3",r:60603},
+  {dom:"Bacteria",phy:"Acidobacteriota",cls:"Thermoanaerobaculia",r:52442},
+  {dom:"Bacteria",phy:"Gemmatimonadota",cls:"S0134_terrestrial_group",r:46401},
+  {dom:"Bacteria",phy:"Cyanobacteria",cls:"Cyanobacteriia",r:43983},
+];
+const DIV = [
+  {p:"projeto-01",         sh:5.38, obs:58,   fp:18.8},
+  {p:"projeto-03",         sh:10.57,obs:2966, fp:206.4},
+  {p:"projeto-04",         sh:9.43, obs:1793, fp:175.0},
+  {p:"projeto-05",         sh:9.83, obs:2475, fp:118.0},
+  {p:"projeto-06-barba",   sh:7.80, obs:830,  fp:56.6},
+  {p:"projeto-06-villum",  sh:8.04, obs:578,  fp:39.7},
+  {p:"projeto-07",         sh:9.91, obs:1888, fp:110.2},
+  {p:"projeto-08",         sh:5.12, obs:451,  fp:31.5},
+  {p:"projeto-09-bacteria",sh:2.89, obs:53,   fp:12.3},
+];
+const SCAT = [
+  {id:"SRR15247053",sh:4.73,fp:11.27,poly:"PBSA"},{id:"SRR15247054",sh:4.23,fp:8.95, poly:"PBSA"},
+  {id:"SRR15247055",sh:4.81,fp:11.67,poly:"PBSA"},{id:"SRR15247057",sh:4.90,fp:11.47,poly:"PBSA"},
+  {id:"SRR15247058",sh:6.00,fp:18.48,poly:"PBSA"},{id:"SRR15247059",sh:5.79,fp:22.40,poly:null},
+  {id:"SRR15247060",sh:5.55,fp:23.13,poly:null},  {id:"SRR15247061",sh:5.90,fp:23.47,poly:null},
+  {id:"SRR15247062",sh:5.63,fp:21.49,poly:null},  {id:"SRR15247063",sh:5.31,fp:18.46,poly:"PBSA"},
+  {id:"SRR15247064",sh:5.90,fp:24.55,poly:null},  {id:"SRR15247065",sh:5.35,fp:14.93,poly:null},
+  {id:"SRR15247066",sh:4.04,fp:10.03,poly:null},  {id:"SRR15247067",sh:5.17,fp:14.41,poly:null},
+  {id:"SRR15247068",sh:4.94,fp:15.57,poly:null},  {id:"SRR15247069",sh:5.28,fp:19.01,poly:null},
+  {id:"SRR15247070",sh:5.55,fp:16.57,poly:"PBSA"},{id:"SRR15247071",sh:4.05,fp:10.47,poly:null},
+  {id:"SRR15247072",sh:4.95,fp:17.57,poly:null},  {id:"SRR15247073",sh:4.73,fp:15.94,poly:null},
+  {id:"SRR15247074",sh:5.59,fp:21.64,poly:null},  {id:"SRR15247075",sh:5.24,fp:19.54,poly:null},
+  {id:"SRR15247076",sh:6.17,fp:24.96,poly:null},  {id:"SRR15247077",sh:6.23,fp:27.71,poly:null},
+  {id:"SRR15247078",sh:6.01,fp:24.08,poly:null},  {id:"SRR15247079",sh:6.13,fp:25.81,poly:null},
+  {id:"SRR15247080",sh:6.11,fp:25.88,poly:null},  {id:"SRR15247081",sh:5.91,fp:25.59,poly:null},
+  {id:"SRR15247082",sh:5.49,fp:18.93,poly:"PBSA"},{id:"SRR15247083",sh:5.71,fp:20.40,poly:"PBSA"},
+];
+const POLY = [
+  {poly:"HDPE",              proj:"projeto-03",         n:4,  sh:10.25,obs:2263},
+  {poly:"PBAT",              proj:"projeto-03",         n:20, sh:10.60,obs:2944},
+  {poly:"PBAT",              proj:"projeto-05",         n:4,  sh:9.82, obs:2486},
+  {poly:"PBAT",              proj:"projeto-06-barba",   n:8,  sh:7.78, obs:799},
+  {poly:"PBAT",              proj:"projeto-06-villum",  n:6,  sh:8.43, obs:619},
+  {poly:"PBAT",              proj:"projeto-07",         n:29, sh:9.85, obs:1850},
+  {poly:"PBSA",              proj:"projeto-01",         n:9,  sh:5.19, obs:49},
+  {poly:"PE",                proj:"projeto-03",         n:11, sh:10.82,obs:3490},
+  {poly:"PE",                proj:"projeto-04",         n:71, sh:9.36, obs:1742},
+  {poly:"PE",                proj:"projeto-05",         n:4,  sh:9.84, obs:2620},
+  {poly:"PE",                proj:"projeto-06-barba",   n:3,  sh:7.67, obs:903},
+  {poly:"PE",                proj:"projeto-06-villum",  n:5,  sh:7.58, obs:532},
+  {poly:"PE",                proj:"projeto-07",         n:16, sh:9.94, obs:1902},
+  {poly:"PE",                proj:"projeto-08",         n:8,  sh:7.33, obs:1186},
+  {poly:"PET",               proj:"projeto-09-bacteria",n:11, sh:2.97, obs:52},
+  {poly:"PLA",               proj:"projeto-04",         n:24, sh:9.58, obs:1873},
+  {poly:"PLA",               proj:"projeto-06-barba",   n:7,  sh:7.88, obs:834},
+  {poly:"PLA",               proj:"projeto-06-villum",  n:6,  sh:8.02, obs:574},
+  {poly:"PLA",               proj:"projeto-07",         n:8,  sh:9.74, obs:1884},
+  {poly:"PLA",               proj:"projeto-09-bacteria",n:16, sh:2.57, obs:50},
+  {poly:"PLA/PBAT",          proj:"projeto-07",         n:18, sh:10.02,obs:2014},
+  {poly:"PLA/PBAT",          proj:"projeto-08",         n:18, sh:5.25, obs:429},
+  {poly:"PLA/PHA",           proj:"projeto-07",         n:23, sh:9.89, obs:1877},
+  {poly:"PLA/PHA",           proj:"projeto-08",         n:20, sh:4.86, obs:401},
+  {poly:"Polyester blend",   proj:"projeto-07",         n:11, sh:9.97, obs:1937},
+  {poly:"starch/PBAT",       proj:"projeto-07",         n:5,  sh:10.06,obs:1960},
+  {poly:"starch/PBAT",       proj:"projeto-08",         n:20, sh:4.62, obs:330},
+  {poly:"starch/Pol. blend", proj:"projeto-07",         n:6,  sh:9.85, obs:1688},
+  {poly:"starch/Pol. blend", proj:"projeto-08",         n:20, sh:4.86, obs:347},
+];
+
+// ================================================================
+// FILTER STATE
+// ================================================================
+const F = {projeto:null, pais:null, plastico:null};
+const PC = ["#3b82f6","#22c55e","#f97316","#a855f7","#06b6d4","#f43f5e","#eab308","#64748b","#ec4899","#34d399"];
+const LD = {paper_bgcolor:'#1e293b',plot_bgcolor:'#1e293b',font:{color:'#94a3b8',family:'Segoe UI,system-ui',size:11},margin:{t:18,r:10,b:40,l:55},colorway:PC,legend:{bgcolor:'#1e293b',bordercolor:'#334155',font:{size:10}},xaxis:{gridcolor:'#334155',zerolinecolor:'#334155'},yaxis:{gridcolor:'#334155',zerolinecolor:'#334155'}};
+const OPT = {responsive:true,displayModeBar:false};
+const pn = n=>n.replace('projeto-','P-');
+const fmt = v=>v>=1e6?(v/1e6).toFixed(1)+'M':v>=1e3?(v/1e3).toFixed(0)+'K':String(v);
+const n2 = v=>v!=null?v.toFixed(2):'—';
+
+// GETTERS — all respect F
+function gProjs() {
+  let ps = PROJS.filter(p=>(!F.projeto||p.n===F.projeto)&&(!F.pais||p.country===F.pais));
+  if(F.plastico) { const w=new Set(POLY.filter(p=>p.poly===F.plastico).map(p=>p.proj)); ps=ps.filter(p=>w.has(p.n)); }
+  return ps;
+}
+function gNs()    { return new Set(gProjs().map(p=>p.n)); }
+function gDen()   { const ns=gNs(); return DEN.filter(d=>ns.has(d.p)); }
+function gDiv()   { const ns=gNs(); return DIV.filter(d=>ns.has(d.p)); }
+function gPoly()  { const ns=gNs(); return POLY.filter(p=>ns.has(p.proj)&&(!F.plastico||p.poly===F.plastico)); }
+function gCtries(){ const cs=new Set(gProjs().map(p=>p.country)); return CTRIES.filter(c=>(!F.pais||c.c===F.pais)&&cs.has(c.c)); }
+function gPhyla() { const ns=gNs(); const m={}; Object.entries(PHYLA_RAW).forEach(([proj,rows])=>{ if(!ns.has(proj)) return; rows.forEach(([ph,r])=>{ m[ph]=(m[ph]||0)+r; }); }); return Object.entries(m).sort((a,b)=>b[1]-a[1]); }
+function gTaxa()  { const ns=gNs(); const all=[]; Object.entries(PHYLA_RAW).forEach(([proj,rows])=>{ if(!ns.has(proj)) return; rows.forEach(([ph,r])=>{ all.push({proj,ph,r}); }); }); return all; }
+
+// ================================================================
+// CROSS-FILTER: one handler per chart, attached once
+// ================================================================
+function onClick(id, fn) {
+  const el=document.getElementById(id);
+  if(!el) return;
+  el._clickFn=fn;
+  if(!el._clickBound){el._clickBound=true;el.on('plotly_click',d=>el._clickFn&&el._clickFn(d));}
+}
+
+function toggle(key,val) {
+  F[key]=F[key]===val?null:val;
+  document.getElementById('fProjeto').value=F.projeto||'';
+  document.getElementById('fPais').value=F.pais||'';
+  document.getElementById('fPlastico').value=F.plastico||'';
+  renderAll();
+}
+
+function updateChips() {
+  const c=document.getElementById('fChips'); c.innerHTML='';
+  const mk=(k,v,l)=>{ const ch=document.createElement('span'); ch.className='chip'; ch.innerHTML=`${l||v} <i class="bi bi-x"></i>`; ch.onclick=()=>toggle(k,null); c.appendChild(ch); };
+  if(F.projeto) mk('projeto',F.projeto,F.projeto);
+  if(F.pais)    mk('pais',F.pais,F.pais);
+  if(F.plastico)mk('plastico',F.plastico,F.plastico);
+}
+
+function updateKPIs() {
+  const ps=gProjs(),den=gDen(),pd=gPoly();
+  const nc=den.length?den.reduce((s,d)=>s+d.nc,0)/den.length:0;
+  document.getElementById('kP').textContent=ps.length;
+  document.getElementById('kA').textContent=ps.reduce((s,p)=>s+p.s,0);
+  const f=ps.reduce((s,p)=>s+p.f,0);
+  document.getElementById('kF').textContent=fmt(f);
+  document.getElementById('kC').textContent=new Set(ps.map(p=>p.country)).size;
+  document.getElementById('kQ').textContent=nc.toFixed(1)+'%';
+  document.getElementById('kPl').textContent=new Set(pd.map(p=>p.poly)).size;
+}
+
+// ================================================================
+// DATATABLE COMPONENT
+// ================================================================
+class DT {
+  constructor(id,cols,getData){ this.id=id; this.cols=cols; this.getData=getData; this.s={col:null,dir:1}; this.q=''; this.pg=0; this.pp=8; }
+  get() {
+    let rows=this.getData();
+    if(this.q){ const q=this.q.toLowerCase(); rows=rows.filter(r=>this.cols.some(c=>String(r[c.k]??'').toLowerCase().includes(q))); }
+    if(this.s.col){ const {col,dir}=this.s; rows=[...rows].sort((a,b)=>{ const av=a[col],bv=b[col]; return (av<bv?-1:av>bv?1:0)*dir; }); }
+    return rows;
+  }
+  render() {
+    const el=document.getElementById(this.id); if(!el) return;
+    const all=this.get(); const tot=all.length;
+    const tp=Math.max(1,Math.ceil(tot/this.pp)); this.pg=Math.min(this.pg,tp-1);
+    const rows=all.slice(this.pg*this.pp,(this.pg+1)*this.pp);
+    el.innerHTML=`<div class="dt-bar"><input class="dt-q" placeholder="🔍 Filtrar colunas..." value="${this.q}"><span class="dt-info">${tot} registros · pg ${this.pg+1}/${tp}</span><div class="dt-pg"><button class="dt-prev"${this.pg===0?' disabled':''}>‹ Ant</button><button class="dt-next"${this.pg>=tp-1?' disabled':''}>Próx ›</button></div></div><div class="dt-scroll"><table class="dt-tbl"><thead><tr>${this.cols.map(c=>`<th class="dt-col${this.s.col===c.k?' dt-s':''}" data-k="${c.k}">${c.l}${this.s.col===c.k?(this.s.dir===1?' ↑':' ↓'):''}</th>`).join('')}</tr></thead><tbody>${rows.map((r,i)=>`<tr class="${i%2?'dt-a':''}">${this.cols.map(c=>`<td>${r[c.k]??'—'}</td>`).join('')}</tr>`).join('')||'<tr><td colspan="99" style="color:var(--mu);text-align:center;padding:.5rem">Sem dados</td></tr>'}</tbody></table></div>`;
+    el.querySelector('.dt-q').oninput=e=>{ this.q=e.target.value; this.pg=0; this.render(); };
+    el.querySelector('.dt-prev').onclick=()=>{ this.pg--; this.render(); };
+    el.querySelector('.dt-next').onclick=()=>{ this.pg++; this.render(); };
+    el.querySelectorAll('.dt-col').forEach(th=>{ th.onclick=()=>{ if(this.s.col===th.dataset.k) this.s.dir*=-1; else{this.s.col=th.dataset.k;this.s.dir=1;} this.render(); }; });
+  }
+  refresh(){ this.pg=0; this.render(); }
+}
+
+// Tables
+const TABLES = {
+  painel: new DT('dt-painel',[{k:'n',l:'Projeto'},{k:'country',l:'País'},{k:'amp',l:'Amplicon'},{k:'mode',l:'Modo'},{k:'s',l:'Amostras'},{k:'f',l:'Features'},{k:'depth',l:'Rarefação'}],()=>gProjs()),
+  taxa:   new DT('dt-taxa',  [{k:'proj',l:'Projeto'},{k:'ph',l:'Filo'},{k:'r',l:'Reads'},{k:'pct',l:'% Projeto'}],()=>gTaxa().map(d=>{ const tot=PHYLA_RAW[d.proj]?.reduce((s,[,v])=>s+v,0)||1; return{...d,pct:(d.r/tot*100).toFixed(2)+'%'}; })),
+  div:    new DT('dt-div',   [{k:'p',l:'Projeto'},{k:'country',l:'País'},{k:'sh',l:'Shannon'},{k:'obs',l:'Observed'},{k:'fp',l:'Faith PD'}],()=>gDiv().map(d=>{ const p=PROJS.find(x=>x.n===d.p); return{...d,country:p?.country??'—',fp:d.fp??'—'}; })),
+  qual:   new DT('dt-qual',  [{k:'p',l:'Projeto'},{k:'inp',l:'Input Reads'},{k:'fi',l:'% Filtrado'},{k:'me',l:'% Merged'},{k:'nc',l:'% Não-Quim.'},{k:'status',l:'Status'}],()=>gDen().map(d=>({...d,me:d.me??'N/A (single)',status:d.nc>=70?'✅ OK':d.nc>=50?'⚠️ Baixo':'❌ Crítico'}))),
+  plas:   new DT('dt-plas',  [{k:'poly',l:'Plástico'},{k:'proj',l:'Projeto'},{k:'n',l:'Amostras'},{k:'sh',l:'Shannon'},{k:'obs',l:'Observed'}],()=>gPoly()),
+  mapa:   new DT('dt-mapa',  [{k:'c',l:'País'},{k:'n',l:'Amostras'},{k:'iso',l:'ISO'},{k:'ph',l:'pH médio'},{k:'soc',l:'SOC (g/kg)'}],()=>gCtries()),
+};
+function refreshTables(){ Object.values(TABLES).forEach(t=>t.refresh()); }
+
+// ================================================================
+// CHART FUNCTIONS
+// ================================================================
+
+// ---- PAINEL ----
+function rSamples() {
+  const ps=gProjs(),sel=F.projeto;
+  Plotly.react('gSamples',[{type:'bar',x:ps.map(p=>pn(p.n)),y:ps.map(p=>p.s),
+    marker:{color:ps.map((p,i)=>sel&&sel!==p.n?PC[i%PC.length]+'44':PC[i%PC.length]),borderwidth:0},
+    text:ps.map(p=>p.s),textposition:'outside',cliponaxis:false,
+    hovertemplate:'<b>%{x}</b><br>%{y} amostras<extra></extra>',
+  }],{...LD,xaxis:{...LD.xaxis,tickangle:-30},yaxis:{...LD.yaxis,title:'Amostras'}},OPT);
+  onClick('gSamples',d=>{ const p=PROJS.find(x=>pn(x.n)===d.points[0].x); if(p) toggle('projeto',p.n); });
+}
+function rCountryPie() {
+  const cs=gCtries(),sel=F.pais;
+  Plotly.react('gCountryPie',[{type:'pie',labels:cs.map(c=>c.c),values:cs.map(c=>c.n),hole:.42,
+    marker:{colors:PC,opacity:cs.map(c=>sel&&sel!==c.c?.3:1)},
+    textinfo:'label+percent',textfont:{size:10},
+    hovertemplate:'<b>%{label}</b><br>%{value} amostras<extra></extra>',
+  }],{...LD,margin:{t:5,b:30,l:5,r:5},showlegend:false},OPT);
+  onClick('gCountryPie',d=>toggle('pais',d.points[0].label));
+}
+function rGauge() {
+  const den=gDen(),avg=den.length?den.reduce((s,d)=>s+d.nc,0)/den.length:0;
+  const col=avg>=70?'#22c55e':avg>=50?'#eab308':'#ef4444';
+  Plotly.react('gGauge',[{type:'indicator',mode:'gauge+number+delta',value:+avg.toFixed(1),
+    delta:{reference:70,decreasing:{color:'#ef4444'},increasing:{color:'#22c55e'}},
+    title:{text:'% Não-Quimérico<br><sub>média projetos</sub>',font:{size:12,color:'#94a3b8'}},
+    number:{suffix:'%',font:{size:36,color:col}},
+    gauge:{axis:{range:[0,100],tickcolor:'#334155',tickfont:{size:9}},bar:{color:col},
+      bgcolor:'#0f172a',bordercolor:'#334155',
+      steps:[{range:[0,50],color:'#7f1d1d18'},{range:[50,70],color:'#92400e18'},{range:[70,100],color:'#14532d18'}],
+      threshold:{line:{color:'#22c55e',width:3},thickness:.75,value:70}},
+  }],{...LD,margin:{t:55,b:10,l:20,r:20}},OPT);
+}
+function rTreemap() {
+  const ps=gProjs();
+  Plotly.react('gTreemap',[{type:'treemap',
+    labels:['All',...ps.map(p=>pn(p.n))],parents:['',...ps.map(()=>'All')],
+    values:[ps.reduce((s,p)=>s+p.f,0),...ps.map(p=>p.f)],
+    textinfo:'label+value+percent parent',
+    marker:{colorscale:'Blues',showscale:false,colors:[0,...ps.map((_,i)=>i/(ps.length||1))]},
+    hovertemplate:'<b>%{label}</b><br>%{value:,} ASVs<extra></extra>',
+  }],{...LD,margin:{t:5,b:5,l:5,r:5}},OPT);
+  onClick('gTreemap',d=>{ if(d.points[0].label==='All') return; const p=PROJS.find(x=>pn(x.n)===d.points[0].label); if(p) toggle('projeto',p.n); });
+}
+function rReads() {
+  const den=gDen();
+  Plotly.react('gReads',[{type:'bar',x:den.map(d=>pn(d.p)),y:den.map(d=>d.inp),
+    marker:{color:den.map((_,i)=>PC[i%PC.length]),borderwidth:0},
+    text:den.map(d=>fmt(d.inp)),textposition:'outside',cliponaxis:false,
+    hovertemplate:'<b>%{x}</b><br>%{y:,} reads<extra></extra>',
+  }],{...LD,xaxis:{...LD.xaxis,tickangle:-30},yaxis:{...LD.yaxis,title:'Reads',tickformat:',.0f'}},OPT);
+  onClick('gReads',d=>{ const p=PROJS.find(x=>pn(x.n)===d.points[0].x); if(p) toggle('projeto',p.n); });
+}
+
+// ---- TAXONOMIA ----
+function rIcicle() {
+  // Build domain → phylum → class hierarchy with IDs (to handle duplicate class names)
+  const ns=gNs();
+  // Filter TAXA_HIER to projects in scope (proxy: use global data since it's aggregated)
+  const taxa=TAXA_HIER; // all data — filtered view would need project-level class data
+  const ids=['_root'], labels=['All'], parents=[''], vals=[taxa.reduce((s,t)=>s+t.r,0)];
+  // Domains
+  const doms=[...new Set(taxa.map(t=>t.dom))];
+  doms.forEach(d=>{ ids.push('_dom_'+d); labels.push(d); parents.push('_root'); vals.push(taxa.filter(t=>t.dom===d).reduce((s,t)=>s+t.r,0)); });
+  // Phyla
+  const phylaAdded=new Set();
+  taxa.forEach(t=>{ const pid='_phy_'+t.phy; if(!phylaAdded.has(pid)){ ids.push(pid); labels.push(t.phy); parents.push('_dom_'+t.dom); vals.push(taxa.filter(x=>x.phy===t.phy).reduce((s,x)=>s+x.r,0)); phylaAdded.add(pid); } });
+  // Classes
+  taxa.forEach((t,i)=>{ ids.push('_cls_'+t.phy+'_'+i); labels.push(t.cls); parents.push('_phy_'+t.phy); vals.push(t.r); });
+  Plotly.react('gIcicle',[{type:'icicle',ids,labels,parents,values:vals,
+    branchvalues:'total',textinfo:'label+percent parent',textfont:{size:9},
+    marker:{colorscale:'Teal',showscale:false},
+    hovertemplate:'<b>%{label}</b><br>%{value:,} reads (%{percentParent:.1%})<extra></extra>',
+  }],{...LD,margin:{t:5,b:5,l:5,r:5}},OPT);
+}
+function rSunburst() {
+  const taxa=TAXA_HIER;
+  const ids=['_root'],labels=['Todos'],parents=[''],vals=[taxa.reduce((s,t)=>s+t.r,0)];
+  const da=new Set(); taxa.forEach(t=>{ if(!da.has(t.dom)){ ids.push('_d'+t.dom); labels.push(t.dom); parents.push('_root'); vals.push(taxa.filter(x=>x.dom===t.dom).reduce((s,x)=>s+x.r,0)); da.add(t.dom); } });
+  const pa=new Set(); taxa.forEach(t=>{ if(!pa.has(t.phy)){ ids.push('_p'+t.phy); labels.push(t.phy); parents.push('_d'+t.dom); vals.push(taxa.filter(x=>x.phy===t.phy).reduce((s,x)=>s+x.r,0)); pa.add(t.phy); } });
+  taxa.forEach((t,i)=>{ ids.push('_c'+i); labels.push(t.cls); parents.push('_p'+t.phy); vals.push(t.r); });
+  Plotly.react('gSunburst',[{type:'sunburst',ids,labels,parents,values:vals,branchvalues:'total',insidetextorientation:'radial',textinfo:'label+percent parent',textfont:{size:9},marker:{colorscale:'Viridis',showscale:false},hovertemplate:'<b>%{label}</b><br>%{value:,} reads<extra></extra>'}],{...LD,margin:{t:5,b:5,l:5,r:5}},OPT);
+}
+function rTaxaHier() {
+  const taxa=TAXA_HIER;
+  const ids=['_root'],labels=['Todos'],parents=[''],vals=[taxa.reduce((s,t)=>s+t.r,0)];
+  const ds=new Set(),ps_=new Set();
+  taxa.forEach((t,i)=>{
+    const dk='_dH'+t.dom;
+    if(!ds.has(dk)){ds.add(dk);ids.push(dk);labels.push(t.dom);parents.push('_root');vals.push(taxa.filter(x=>x.dom===t.dom).reduce((s,x)=>s+x.r,0));}
+    const pk='_pH'+t.phy;
+    if(!ps_.has(pk)){ps_.add(pk);ids.push(pk);labels.push(t.phy);parents.push(dk);vals.push(taxa.filter(x=>x.phy===t.phy).reduce((s,x)=>s+x.r,0));}
+    ids.push('_cH'+i);labels.push(t.cls);parents.push(pk);vals.push(t.r);
+  });
+  Plotly.react('gTaxaHier',[{type:'treemap',ids,labels,parents,values:vals,
+    branchvalues:'total',textinfo:'label+value+percent parent',
+    pathbar:{visible:true,side:'top',thickness:24,textfont:{size:11,color:'#e2e8f0'}},
+    marker:{colorscale:'Teal',showscale:false,pad:{t:3,b:3,l:3,r:3}},
+    hovertemplate:'<b>%{label}</b><br>%{value:,} reads<br>%{percentParent:.1%} do nível acima<extra></extra>',
+  }],{...LD,margin:{t:34,b:5,l:5,r:5}},OPT);
+}
+function rTaxaTreemap() {
+  const ph=gPhyla().slice(0,20);
+  Plotly.react('gTaxaTreemap',[{type:'treemap',labels:['All',...ph.map(([p])=>p)],parents:['',...ph.map(()=>'All')],values:[ph.reduce((s,[,r])=>s+r,0),...ph.map(([,r])=>r)],textinfo:'label+value',marker:{colorscale:'Teal',showscale:false,colors:[0,...ph.map((_,i)=>i/20)]},hovertemplate:'<b>%{label}</b><br>%{value:,} reads<extra></extra>'}],{...LD,margin:{t:5,b:5,l:5,r:5}},OPT);
+}
+function rPareto() {
+  const ph=gPhyla().slice(0,15); const tot=ph.reduce((s,[,r])=>s+r,0)||1;
+  let cum=0; const cp=ph.map(([,r])=>{ cum+=r; return +(cum/tot*100).toFixed(1); });
+  Plotly.react('gPareto',[
+    {type:'bar',name:'Reads',x:ph.map(([p])=>p),y:ph.map(([,r])=>r),marker:{color:'#3b82f6'}},
+    {type:'scatter',name:'% Acum.',x:ph.map(([p])=>p),y:cp,mode:'lines+markers',line:{color:'#f97316',width:2},marker:{size:5},yaxis:'y2'},
+  ],{...LD,xaxis:{...LD.xaxis,tickangle:-40,tickfont:{size:8.5}},yaxis:{...LD.yaxis,title:'Reads',tickformat:',.0f'},yaxis2:{title:'% Acum.',overlaying:'y',side:'right',range:[0,105],ticksuffix:'%',gridcolor:'transparent',tickfont:{size:9}},margin:{t:15,b:105,l:65,r:55},legend:{x:.02,y:.98}},OPT);
+}
+function rPhylaHeat() {
+  const ps=gProjs();
+  const z=ps.map(p=>{ const rows=PHYLA_RAW[p.n]||[]; const tot=rows.reduce((s,[,v])=>s+v,0)||1; return TOP10.map(ph=>{ const f=rows.find(([n])=>n===ph); return f?+(f[1]/tot*100).toFixed(2):0; }); });
+  Plotly.react('gPhylaHeat',[{type:'heatmap',z,x:TOP10,y:ps.map(p=>pn(p.n)),colorscale:'Viridis',showscale:true,hovertemplate:'%{y} · %{x}<br>%{z:.2f}%<extra></extra>',colorbar:{len:.8,thickness:10,ticksuffix:'%',tickfont:{size:8}},text:z.map(r=>r.map(v=>v>0?v.toFixed(1)+'%':'')),texttemplate:'%{text}',textfont:{size:8,color:'white'}}],{...LD,margin:{t:8,b:115,l:100,r:65},xaxis:{...LD.xaxis,tickangle:-40,tickfont:{size:8.5}}},OPT);
+}
+
+// ---- DIVERSIDADE ----
+function rScatter() {
+  const data=F.plastico?SCAT.filter(s=>s.poly===F.plastico):SCAT;
+  const g={}; data.forEach(s=>{ const k=s.poly||'Controle'; (g[k]=g[k]||[]).push(s); });
+  Plotly.react('gScatter',Object.entries(g).map(([k,pts],i)=>({type:'scatter',mode:'markers',name:k,x:pts.map(p=>p.sh),y:pts.map(p=>p.fp),marker:{size:9,color:PC[i%PC.length],opacity:.85},text:pts.map(p=>p.id),hovertemplate:'<b>%{text}</b><br>Shannon=%{x:.2f}, FaithPD=%{y:.2f}<extra></extra>'})),{...LD,xaxis:{...LD.xaxis,title:"Shannon H'"},yaxis:{...LD.yaxis,title:'Faith PD'},margin:{t:18,b:50,l:60,r:10}},OPT);
+}
+function rBubble() {
+  const div=gDiv(),ps=gProjs();
+  const pts=div.map(d=>{ const p=ps.find(x=>x.n===d.p); return p?{...d,s:p.s}:null; }).filter(Boolean);
+  Plotly.react('gBubble',[{type:'scatter',mode:'markers',x:pts.map(d=>d.sh),y:pts.map(d=>d.obs),marker:{size:pts.map(d=>Math.sqrt(d.s)*5.5),color:pts.map((_,i)=>PC[i%PC.length]),opacity:.8,sizemode:'area',line:{color:'white',width:.8}},text:pts.map(d=>pn(d.p)),hovertemplate:'<b>%{text}</b><br>Shannon=%{x:.2f}<br>Observed=%{y}<extra></extra>'}],{...LD,xaxis:{...LD.xaxis,title:"Shannon H'"},yaxis:{...LD.yaxis,title:'Observed Features'},margin:{t:18,b:50,l:70,r:10}},OPT);
+  onClick('gBubble',d=>{ const p=PROJS.find(x=>pn(x.n)===d.points[0].text); if(p) toggle('projeto',p.n); });
+}
+function rDot() {
+  const pd=gPoly().sort((a,b)=>a.sh-b.sh);
+  Plotly.react('gDot',[{type:'scatter',mode:'markers',x:pd.map(d=>d.sh),y:pd.map(d=>d.poly),marker:{size:pd.map(d=>Math.max(7,d.n/3)),color:pd.map(d=>d.sh),colorscale:'Plasma',showscale:true,opacity:.85,colorbar:{len:.7,thickness:9,tickfont:{size:8}},line:{color:'white',width:.4}},text:pd.map(d=>pn(d.proj)),hovertemplate:'<b>%{y}</b> · %{text}<br>Shannon=%{x:.2f}, N=%{marker.size:.0f}<extra></extra>'}],{...LD,xaxis:{...LD.xaxis,title:"Shannon H'"},yaxis:{...LD.yaxis,automargin:true,tickfont:{size:8.5}},margin:{t:8,b:50,l:145,r:55}},OPT);
+  onClick('gDot',d=>toggle('plastico',d.points[0].y));
+}
+function rArea() {
+  const div=gDiv().sort((a,b)=>a.sh-b.sh);
+  Plotly.react('gArea',[{type:'scatter',mode:'lines+markers',fill:'tozeroy',name:"Shannon H'",x:div.map(d=>pn(d.p)),y:div.map(d=>d.sh),line:{color:'#3b82f6',width:2},fillcolor:'#3b82f625'},{type:'scatter',mode:'lines+markers',name:'Observed/100',x:div.map(d=>pn(d.p)),y:div.map(d=>+(d.obs/100).toFixed(2)),line:{color:'#22c55e',width:2,dash:'dot'}}],{...LD,xaxis:{...LD.xaxis,tickangle:-30},yaxis:{...LD.yaxis,title:'Valor'},margin:{t:18,b:80,l:50,r:10}},OPT);
+}
+function rBox() {
+  const ps=gProjs(); const cm={};
+  ps.forEach(p=>{ const d=DIV.find(x=>x.p===p.n); if(d){(cm[p.country]=cm[p.country]||[]).push(d.sh);} });
+  const tr=Object.entries(cm).map(([c,v],i)=>({type:'box',name:c,y:v,marker:{color:PC[i%PC.length]},boxpoints:'all',jitter:.4,pointpos:-1.5}));
+  Plotly.react('gBox',tr.length?tr:[{type:'box',y:[0],name:'N/A'}],{...LD,yaxis:{...LD.yaxis,title:"Shannon H'"},margin:{t:18,b:40,l:60,r:10}},OPT);
+}
+
+// ---- QUALIDADE ----
+function rFunnel() {
+  const den=gDen(); if(!den.length){Plotly.react('gFunnel',[],LD,OPT);return;}
+  const inp=den.reduce((s,d)=>s+d.inp,0);
+  const fi=inp*den.reduce((s,d)=>s+d.fi,0)/den.length/100;
+  const meArr=den.filter(d=>d.me!=null); const me=meArr.length?fi*meArr.reduce((s,d)=>s+d.me,0)/meArr.length/100:fi*.65;
+  const nc=fi*den.reduce((s,d)=>s+d.nc,0)/den.length/100;
+  Plotly.react('gFunnel',[{type:'funnel',y:['Input','Filtrado','Merged','Não-Quimérico'],x:[inp,fi,me,nc],marker:{color:['#3b82f6','#22c55e','#f97316','#a855f7']},textinfo:'value+percent initial',hovertemplate:'<b>%{y}</b><br>%{x:,.0f} reads<extra></extra>'}],{...LD,margin:{t:18,b:40,l:110,r:15}},OPT);
+}
+function rQualHeat() {
+  const den=gDen();
+  Plotly.react('gQualHeat',[{type:'heatmap',z:den.map(d=>[d.fi,d.me??0,d.nc]),x:['% Filtrado','% Merged','% Não-Quimér.'],y:den.map(d=>pn(d.p)),colorscale:[[0,'#7f1d1d'],[.5,'#eab308'],[1,'#22c55e']],showscale:true,zmin:0,zmax:100,text:den.map(d=>[d.fi.toFixed(1)+'%',d.me?d.me.toFixed(1)+'%':'N/A',d.nc.toFixed(1)+'%']),texttemplate:'%{text}',textfont:{size:10,color:'white'},colorbar:{len:.8,thickness:10,ticksuffix:'%',tickfont:{size:8}},hovertemplate:'%{y} · %{x}: %{z:.1f}%<extra></extra>'}],{...LD,margin:{t:8,b:40,l:110,r:60}},OPT);
+}
+function rWaterfall() {
+  const den=gDen();
+  Plotly.react('gWaterfall',[{type:'waterfall',x:den.map(d=>pn(d.p)),y:den.map(d=>d.inp),measure:den.map(()=>'relative'),text:den.map(d=>fmt(d.inp)),textposition:'auto',connector:{line:{color:'#334155'}},increasing:{marker:{color:'#22c55e'}},hovertemplate:'<b>%{x}</b><br>%{y:,} reads<extra></extra>'}],{...LD,xaxis:{...LD.xaxis,tickangle:-30},yaxis:{...LD.yaxis,title:'Reads',tickformat:',.0f'},margin:{t:18,b:80,l:65,r:10}},OPT);
+}
+function rGauges() {
+  const den=gDen(); if(!den.length){Plotly.react('gGauges',[],LD,OPT);return;}
+  const cols=3,rows=Math.ceil(den.length/cols);
+  Plotly.react('gGauges',den.map((d,i)=>({type:'indicator',mode:'gauge+number',value:d.nc,domain:{row:Math.floor(i/cols),column:i%cols},title:{text:pn(d.p).replace('P-','P'),font:{size:9,color:'#94a3b8'}},number:{font:{size:13},suffix:'%',valueformat:'.1f'},gauge:{axis:{range:[0,100],visible:false},bar:{color:d.nc>=70?'#22c55e':d.nc>=50?'#eab308':'#ef4444'},bgcolor:'#0f172a',bordercolor:'#334155',threshold:{line:{color:'#22c55e',width:2},thickness:.75,value:70}}})),{...LD,grid:{rows,columns:cols,pattern:'independent'},margin:{t:20,b:10,l:10,r:10}},OPT);
+}
+
+// ---- PLÁSTICOS ----
+function rPolyHeat() {
+  const pd=gPoly();
+  const polys=[...new Set(pd.map(p=>p.poly))].sort(),projs=[...new Set(pd.map(p=>p.proj))].sort();
+  const z=projs.map(pr=>polys.map(po=>{ const f=pd.find(p=>p.poly===po&&p.proj===pr); return f?f.sh:null; }));
+  Plotly.react('gPolyHeat',[{type:'heatmap',z,x:polys,y:projs.map(pn),colorscale:'Plasma',showscale:true,hovertemplate:'%{y} · %{x}<br>Shannon=%{z:.2f}<extra></extra>',colorbar:{len:.8,thickness:10,tickfont:{size:8}},text:z.map(r=>r.map(v=>v?v.toFixed(2):'')),texttemplate:'%{text}',textfont:{size:8.5,color:'white'}}],{...LD,margin:{t:8,b:130,l:115,r:65},xaxis:{...LD.xaxis,tickangle:-45,tickfont:{size:8.5}},yaxis:{...LD.yaxis,tickfont:{size:9}}},OPT);
+  onClick('gPolyHeat',d=>{ if(d.points[0].x) toggle('plastico',d.points[0].x); });
+}
+function rPolyBubble() {
+  const pd=gPoly(),polys=[...new Set(pd.map(p=>p.poly))];
+  Plotly.react('gPolyBubble',polys.map((poly,i)=>{ const pts=pd.filter(p=>p.poly===poly),sh=pts.reduce((s,p)=>s+p.sh,0)/pts.length,n=pts.reduce((s,p)=>s+p.n,0); return{type:'scatter',mode:'markers',name:poly,x:[sh],y:[poly],marker:{size:[Math.max(12,Math.sqrt(n)*9)],color:PC[i%PC.length],opacity:.8,sizemode:'diameter',line:{color:'white',width:1}},hovertemplate:`<b>${poly}</b><br>Shannon=${sh.toFixed(2)}<br>N=${n}<extra></extra>`}; }),{...LD,xaxis:{...LD.xaxis,title:"Shannon H' médio"},yaxis:{...LD.yaxis,automargin:true,tickfont:{size:9}},showlegend:false,margin:{t:8,b:50,l:155,r:20}},OPT);
+  onClick('gPolyBubble',d=>toggle('plastico',d.points[0].data.name));
+}
+function rPolyFunnel() {
+  const grp={}; gPoly().forEach(p=>{ grp[p.poly]=(grp[p.poly]||0)+p.n; });
+  const s=Object.entries(grp).sort((a,b)=>b[1]-a[1]);
+  Plotly.react('gPolyFunnel',[{type:'funnel',y:s.map(([k])=>k),x:s.map(([,v])=>v),marker:{color:s.map((_,i)=>PC[i%PC.length])},textinfo:'value+percent total',hovertemplate:'<b>%{y}</b><br>%{x} amostras<extra></extra>'}],{...LD,margin:{t:8,b:10,l:145,r:10}},OPT);
+  onClick('gPolyFunnel',d=>toggle('plastico',d.points[0].y));
+}
+function rPolyScatter() {
+  const pd=gPoly(),polys=[...new Set(pd.map(p=>p.poly))];
+  Plotly.react('gPolyScatter',polys.map((poly,i)=>{ const pts=pd.filter(p=>p.poly===poly); return{type:'scatter',mode:'markers',name:poly,x:pts.map(p=>p.sh),y:pts.map(p=>p.obs),marker:{size:pts.map(p=>Math.max(6,p.n/5)),color:PC[i%PC.length],opacity:.8},text:pts.map(p=>pn(p.proj)),hovertemplate:`<b>${poly}</b> · %{text}<br>Shannon=%{x:.2f}<br>Observed=%{y}<extra></extra>`}; }),{...LD,xaxis:{...LD.xaxis,title:"Shannon H'"},yaxis:{...LD.yaxis,title:'Observed Features'},margin:{t:18,b:50,l:70,r:10},legend:{font:{size:9}}},OPT);
+  onClick('gPolyScatter',d=>toggle('plastico',d.points[0].data.name));
+}
+
+// ---- MAPA ----
+function rMap() {
+  const cs=gCtries(),sel=F.pais;
+  Plotly.react('gMap',[{type:'choropleth',locationmode:'ISO-3',locations:cs.map(c=>c.iso),z:cs.map(c=>c.n),text:cs.map(c=>c.c),colorscale:'Blues',showscale:true,colorbar:{title:'Amostras',thickness:10,len:.6,tickfont:{size:8}},marker:{line:{color:'#334155',width:.5},opacity:cs.map(c=>sel&&sel!==c.c?.35:1)},hovertemplate:'<b>%{text}</b><br>%{z} amostras<extra></extra>'}],{...LD,geo:{showframe:false,showcoastlines:true,coastlinecolor:'#334155',showland:true,landcolor:'#162032',showocean:true,oceancolor:'#0f172a',showcountries:true,countrycolor:'#334155',bgcolor:'#1e293b',projection:{type:'natural earth'}},margin:{t:5,b:5,l:5,r:5}},OPT);
+  onClick('gMap',d=>toggle('pais',d.points[0].text));
+}
+function rCountryStats() {
+  const cs=gCtries();
+  Plotly.react('gCountryStats',[{type:'bar',name:'Amostras',x:cs.map(c=>c.c),y:cs.map(c=>c.n),marker:{color:'#3b82f6'},yaxis:'y'},{type:'scatter',name:'SOC g/kg',x:cs.map(c=>c.c),y:cs.map(c=>c.soc),mode:'lines+markers',line:{color:'#22c55e'},marker:{size:8},yaxis:'y2'}],{...LD,yaxis:{...LD.yaxis,title:'Amostras'},yaxis2:{title:'SOC (g/kg)',overlaying:'y',side:'right',gridcolor:'transparent',tickfont:{size:9}},margin:{t:18,b:50,l:60,r:60},legend:{font:{size:10}}},OPT);
+  onClick('gCountryStats',d=>toggle('pais',d.points[0].x));
+}
+function rCountryProj() {
+  const ps=gProjs(),cs=[...new Set(ps.map(p=>p.country))];
+  Plotly.react('gCountryProj',cs.map((c,i)=>{ const cp=ps.filter(p=>p.country===c); return{type:'bar',name:c,x:cp.map(p=>pn(p.n)),y:cp.map(p=>p.s),marker:{color:PC[i%PC.length]}}; }),{...LD,barmode:'group',xaxis:{...LD.xaxis,tickangle:-30},yaxis:{...LD.yaxis,title:'Amostras'},margin:{t:18,b:80,l:60,r:10}},OPT);
+}
+
+// ================================================================
+// ORCHESTRATION
+// ================================================================
+const TABS = {
+  tPainel: ()=>{ rSamples();rCountryPie();rGauge();rTreemap();rReads(); },
+  tTaxa:   ()=>{ rIcicle();rSunburst();rPareto();rPhylaHeat();rTaxaTreemap();rTaxaHier(); },
+  tDiv:    ()=>{ rScatter();rBubble();rDot();rArea();rBox(); },
+  tQual:   ()=>{ rFunnel();rQualHeat();rWaterfall();rGauges(); },
+  tPlas:   ()=>{ rPolyHeat();rPolyBubble();rPolyFunnel();rPolyScatter(); },
+  tMapa:   ()=>{ rMap();rCountryStats();rCountryProj(); },
+};
+const shown=new Set(['tPainel']);
+
+function renderAll() {
+  updateKPIs();
+  updateChips();
+  shown.forEach(id=>TABS[id]?.());
+  refreshTables();
+}
+
+document.querySelectorAll('[data-bs-toggle="tab"]').forEach(btn=>{
+  btn.addEventListener('shown.bs.tab',e=>{
+    const id=e.target.getAttribute('data-bs-target').replace('#','');
+    shown.add(id); TABS[id]?.(); TABLES[id.replace('t','').toLowerCase()]?.render();
+  });
+});
+
+// ================================================================
+// INIT
+// ================================================================
+function initSelects() {
+  const sp=document.getElementById('fProjeto'),sc=document.getElementById('fPais'),sm=document.getElementById('fPlastico');
+  PROJS.forEach(p=>{ sp.innerHTML+=`<option value="${p.n}">${p.n}</option>`; });
+  CTRIES.forEach(c=>{ sc.innerHTML+=`<option value="${c.c}">${c.c}</option>`; });
+  [...new Set(POLY.map(p=>p.poly))].sort().forEach(po=>{ sm.innerHTML+=`<option value="${po}">${po}</option>`; });
+  sp.onchange=e=>{ F.projeto=e.target.value||null; renderAll(); };
+  sc.onchange=e=>{ F.pais=e.target.value||null; renderAll(); };
+  sm.onchange=e=>{ F.plastico=e.target.value||null; renderAll(); };
+  document.getElementById('btnReset').onclick=()=>{ F.projeto=F.pais=F.plastico=null; sp.value=sc.value=sm.value=''; renderAll(); };
+}
+
+document.addEventListener('DOMContentLoaded',()=>{
+  initSelects();
+  updateKPIs();
+  TABS.tPainel();
+  TABLES.painel.render();
+  TABLES.taxa.render();
+  TABLES.div.render();
+  TABLES.qual.render();
+  TABLES.plas.render();
+  TABLES.mapa.render();
+});
+</script>
+</body>
+</html>
